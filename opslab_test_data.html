@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OpsLab · Тестові дані</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0D0F12;--surface:#141720;--s2:#1C2030;--border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.12);--text:#F0F2F7;--muted:#7A8099;--hint:#4A5068;--blue:#4E8FE8;--blue-bg:rgba(78,143,232,0.1);--blue-b:rgba(78,143,232,0.25);--green:#4EAD7A;--green-bg:rgba(78,173,122,0.1);--green-b:rgba(78,173,122,0.25);--amber:#D4933A;--amber-bg:rgba(212,147,58,0.1);--amber-b:rgba(212,147,58,0.25);--red:#C95F5F;--red-bg:rgba(201,95,95,0.1);--red-b:rgba(201,95,95,0.25);--teal:#4EA8AD;--teal-bg:rgba(78,168,173,0.1);--teal-b:rgba(78,168,173,0.25);}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;}
+.page{max-width:600px;margin:0 auto;padding:40px 24px;}
+.logo{display:flex;align-items:center;gap:10px;margin-bottom:32px;}
+.logo-mark{width:28px;height:28px;border-radius:6px;background:var(--blue-bg);border:1px solid var(--blue-b);display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:10px;color:var(--blue);}
+.logo-text{font-size:13px;color:var(--muted);}
+h1{font-size:20px;font-weight:300;margin-bottom:8px;}
+h1 strong{font-weight:500;}
+.sub{font-size:13px;color:var(--muted);margin-bottom:28px;line-height:1.6;}
+.name-block{background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:16px;margin-bottom:20px;}
+.fl{font-family:'DM Mono',monospace;font-size:10px;color:var(--hint);letter-spacing:.04em;text-transform:uppercase;margin-bottom:5px;}
+.fi{width:100%;background:var(--s2);border:1px solid var(--border2);border-radius:8px;padding:8px 11px;font-size:13px;color:var(--text);font-family:'DM Sans',sans-serif;outline:none;}
+.fi:focus{border-color:var(--blue-b);}
+.fi::placeholder{color:var(--hint);}
+.roles{display:flex;flex-direction:column;gap:8px;margin-bottom:20px;}
+.role-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;}
+.role-info{}
+.role-badge{font-family:'DM Mono',monospace;font-size:9px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px;}
+.role-badge.self{color:var(--green);}
+.role-badge.mentor{color:var(--amber);}
+.role-badge.peer{color:var(--teal);}
+.role-desc{font-size:12px;color:var(--muted);}
+.role-status{font-size:12px;color:var(--hint);font-family:'DM Mono',monospace;}
+.role-status.sent{color:var(--green);}
+.role-status.error{color:var(--red);}
+.btn-main{width:100%;padding:13px;background:var(--blue-bg);border:1px solid var(--blue-b);border-radius:10px;color:var(--blue);font-size:14px;font-weight:500;font-family:'DM Sans',sans-serif;cursor:pointer;margin-bottom:12px;}
+.btn-main:hover{background:rgba(78,143,232,0.2);}
+.btn-main:disabled{opacity:.4;cursor:not-allowed;}
+.log{background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);line-height:1.8;min-height:80px;margin-top:16px;white-space:pre-wrap;}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="logo">
+    <div class="logo-mark">OL</div>
+    <div class="logo-text">OpsLab · Генератор тестових даних</div>
+  </div>
+
+  <h1>Відправити <strong>тестові відповіді</strong></h1>
+  <p class="sub">Вкажи імʼя менеджера і натисни кнопку — скрипт відправить три рандомні відповіді (самооцінка, ментор, peer) в Zapier щоб перевірити як виглядає звіт.</p>
+
+  <div class="name-block">
+    <div class="fl">Імʼя менеджера для тесту</div>
+    <input class="fi" id="mgname" placeholder="Наприклад: Юля Шатко" value="Юля Шатко">
+  </div>
+
+  <div class="roles">
+    <div class="role-card">
+      <div class="role-info">
+        <div class="role-badge self">Самооцінка</div>
+        <div class="role-desc">12 критеріїв + 4 приклади + 3 відкритих питання</div>
+      </div>
+      <div class="role-status" id="st-self">очікує</div>
+    </div>
+    <div class="role-card">
+      <div class="role-info">
+        <div class="role-badge mentor">Ментор</div>
+        <div class="role-desc">12 критеріїв + 4 приклади + червоні прапорці + тест на довіру</div>
+      </div>
+      <div class="role-status" id="st-mentor">очікує</div>
+    </div>
+    <div class="role-card">
+      <div class="role-info">
+        <div class="role-badge peer">Peer</div>
+        <div class="role-desc">6 критеріїв + перевірочне питання</div>
+      </div>
+      <div class="role-status" id="st-peer">очікує</div>
+    </div>
+  </div>
+
+  <button class="btn-main" id="btn" onclick="sendAll()">Відправити тестові дані</button>
+  <div class="log" id="log">Натисни кнопку щоб відправити дані...</div>
+</div>
+
+<script>
+const WH = 'https://hooks.zapier.com/hooks/catch/14002247/4bh0i7c/';
+
+const r = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+
+const CRITERIA_12 = ['Рух за планом','Управління очікуваннями','Ескалація ресурсу','Ритм комунікації','Валідація запиту','Стійкість під тиском','Відповідальність','Робота з фідбеком','Освоєння нового','Відвертість у стосунках','Проактивність','Дія в невизначеності'];
+const CRITERIA_6 = ['Валідація запиту','Стійкість під тиском','Відповідальність','Освоєння нового','Відвертість у стосунках','Проактивність'];
+const IP_KEYS = ['валідація_запиту','стійкість_під_тиском','відповідальність','відвертість_у_стосунках'];
+
+function makeScores(keys, bias = 0) {
+  const obj = {};
+  keys.forEach(k => { obj[k] = Math.min(4, Math.max(1, r(2, 4) + bias)); });
+  return obj;
+}
+
+function makeIpsative() {
+  const obj = {};
+  IP_KEYS.forEach(k => { obj[k] = pick(['A','B']); });
+  return obj;
+}
+
+function flatScores(scores, prefix) {
+  const obj = {};
+  Object.entries(scores).forEach(([k, v]) => {
+    const key = prefix + k.toLowerCase().replace(/ /g, '_');
+    obj[key] = v;
+  });
+  return obj;
+}
+
+function flatIpsative(ip) {
+  const obj = {};
+  Object.entries(ip).forEach(([k, v]) => { obj[`ipsative_${k}`] = v; });
+  return obj;
+}
+
+const EXAMPLES = [
+  'Клієнт попросив зробити оргструктуру за тиждень. Я уточнив навіщо і виявилось що насправді потрібен RACI — зробили його і клієнт був задоволений.',
+  'Під час дзвінку клієнт агресивно відреагував на мій коментар. Я взяв паузу і запитав що конкретно його турбує — виявилось що він переживає за терміни.',
+  'Дедлайн по звіту горів через затримку з боку клієнта. Я попередив заздалегідь і запропонував скорочену версію.',
+  'Бачив що процес найму затягується але не ескалював вчасно — в результаті клієнт запитав сам.',
+];
+
+const OPENS_SELF = [
+  'Найсильнішим моментом вважаю коли вдалось переконати клієнта змінити підхід до планування — він спочатку опирався але потім сам підтвердив що це було правильно.',
+  'Найважче давалась невизначеність в перший місяць — коли не було чіткого плану і треба було самому формулювати наступні кроки.',
+  'Якби починала знову — більше б запитувала на старті і менше б намагалась здогадатись що клієнт хоче.',
+];
+
+const OPENS_MENTOR = [
+  'Найсильніший момент — коли самостійно провела складний дзвінок і правильно відреагувала на тиск клієнта. Показує потенціал до Senior рівня.',
+  'Системний виклик — ескалація. Часто намагається вирішити сама до останнього замість підсвітити вчасно.',
+  'Грейд підтверджено. Людина демонструє стабільний рівень Middle OM і готова до більш складних проєктів.',
+  'В онбордингу варто більше часу приділяти живим розборам кейсів а не теоретичним матеріалам.',
+];
+
+const OPENS_PEER = [
+  'Найбільше вразила здатність тримати позицію коли клієнт тиснув — я б злякався але вона спокійно відповіла по суті.',
+  'Раджу більше ескалювати коли щось іде не так — інколи здається що намагається тягнути сама.',
+];
+
+async function send(payload, role) {
+  const st = document.getElementById(`st-${role}`);
+  st.textContent = 'відправляємо...';
+  try {
+    await fetch(WH, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
+    st.textContent = '✓ відправлено';
+    st.className = 'role-status sent';
+    return true;
+  } catch(e) {
+    st.textContent = '✗ помилка';
+    st.className = 'role-status error';
+    return false;
+  }
+}
+
+function log(msg) {
+  document.getElementById('log').textContent += '\n' + msg;
+}
+
+async function sendAll() {
+  const name = document.getElementById('mgname').value.trim();
+  if (!name) { alert('Вкажи імʼя менеджера'); return; }
+
+  const btn = document.getElementById('btn');
+  btn.disabled = true;
+  document.getElementById('log').textContent = `Починаємо відправку для: ${name}\n`;
+
+  // --- САМООЦІНКА ---
+  const selfScores = makeScores(CRITERIA_12, 0);
+  const selfIp = makeIpsative();
+  const selfPayload = {
+    timestamp: new Date().toISOString(),
+    evaluator_role: 'self',
+    evaluator_name: name,
+    manager_name: name,
+    manager_role: 'Middle Fractional OM',
+    ...flatScores(selfScores, 'scores_'),
+    ...flatIpsative(selfIp),
+    example_1: EXAMPLES[0],
+    example_2: EXAMPLES[1],
+    example_3: EXAMPLES[2],
+    example_4: EXAMPLES[3],
+    open_1: OPENS_SELF[0],
+    open_2: OPENS_SELF[1],
+    open_3: OPENS_SELF[2],
+  };
+  log('→ Самооцінка: ' + JSON.stringify(selfScores).slice(0,60) + '...');
+  await send(selfPayload, 'self');
+  await new Promise(r => setTimeout(r, 800));
+
+  // --- МЕНТОР ---
+  const mentorScores = makeScores(CRITERIA_12, -1); // ментор зазвичай нижче
+  const mentorIp = makeIpsative();
+  const mentorPayload = {
+    timestamp: new Date().toISOString(),
+    evaluator_role: 'mentor',
+    evaluator_name: 'Міша Іващук',
+    manager_name: name,
+    manager_role: 'Middle Fractional OM',
+    ...flatScores(mentorScores, 'scores_'),
+    ...flatIpsative(mentorIp),
+    trust_score: r(2, 4),
+    example_1: EXAMPLES[0],
+    example_2: EXAMPLES[1],
+    example_3: EXAMPLES[2],
+    example_4: EXAMPLES[3],
+    redflags: pick(['', '', 'Приходив за допомогою без жодного власного варіанту', '']),
+    open_1: OPENS_MENTOR[0],
+    open_2: OPENS_MENTOR[1],
+    open_3: OPENS_MENTOR[2],
+    open_4: OPENS_MENTOR[3],
+  };
+  log('→ Ментор: ' + JSON.stringify(mentorScores).slice(0,60) + '...');
+  await send(mentorPayload, 'mentor');
+  await new Promise(r => setTimeout(r, 800));
+
+  // --- PEER ---
+  const peerScores = makeScores(CRITERIA_6, 0);
+  const peerPayload = {
+    timestamp: new Date().toISOString(),
+    evaluator_role: 'peer',
+    evaluator_name: 'Оксана Лесик',
+    manager_name: name,
+    manager_role: 'Middle Fractional OM',
+    ...flatScores(peerScores, 'scores_'),
+    trust_score: r(2, 4),
+    open_1: OPENS_PEER[0],
+    open_2: OPENS_PEER[1],
+  };
+  log('→ Peer: ' + JSON.stringify(peerScores).slice(0,60) + '...');
+  await send(peerPayload, 'peer');
+
+  log('\n✓ Готово. Відкрий звіт і введи: ' + name);
+  btn.disabled = false;
+}
+</script>
+</body>
+</html>
