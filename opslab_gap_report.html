@@ -230,13 +230,47 @@ async function loadReport() {
       return;
     }
 
-    const data = { self: null, mentor: null, peer: null };
+    const data = { self: null, mentor: null, peer: null, mentors: [], peers: [] };
     managerRows.forEach(row => {
       const role = getVal(row, 'evaluator_role');
       if (role === 'self') data.self = row;
-      else if (role === 'mentor') data.mentor = row;
-      else if (role === 'peer') data.peer = row;
+      else if (role === 'mentor') { data.mentors.push(row); data.mentor = row; }
+      else if (role === 'peer') { data.peers.push(row); data.peer = row; }
     });
+
+    // Усереднюємо менторів і peer якщо їх кілька
+    const avgRows = (rows, col) => {
+      const vals = rows.map(r => getVal(r, col)).filter(v => v && !isNaN(parseFloat(v))).map(v => parseFloat(v));
+      return vals.length ? (vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(1) : null;
+    };
+
+    // Створюємо агреговані рядки для ментора і peer
+    if (data.mentors.length > 1) {
+      data._mentorAvg = true;
+      data._mentorCount = data.mentors.length;
+    }
+    if (data.peers.length > 1) {
+      data._peerAvg = true;
+      data._peerCount = data.peers.length;
+    }
+
+    // Функція для отримання усередненого значення
+    data._getAvgVal = (role, col) => {
+      const rows = role === 'mentor' ? data.mentors : role === 'peer' ? data.peers : [];
+      if (rows.length === 0) return null;
+      if (rows.length === 1) return getVal(rows[0], col);
+      return avgRows(rows, col);
+    };
+
+    // Ipsative — більшість голосів
+    data._getIpsative = (role, col) => {
+      const rows = role === 'mentor' ? data.mentors : role === 'peer' ? data.peers : [];
+      if (rows.length === 0) return null;
+      if (rows.length === 1) return getVal(rows[0], col);
+      const votes = {};
+      rows.forEach(r => { const v = getVal(r, col); if (v) votes[v] = (votes[v]||0)+1; });
+      return Object.keys(votes).sort((a,b)=>votes[b]-votes[a])[0] || null;
+    };
 
     const managerName = getVal(managerRows[0], 'manager_name');
     const managerRole = data.self ? getVal(data.self, 'manager_role') : '';
@@ -254,16 +288,18 @@ function renderReport(name, role, data, cols, getVal) {
   const scores = {};
   ['self','mentor','peer'].forEach(r => {
     scores[r] = {};
-    if (!data[r]) return;
+    const rows = r === 'mentor' ? data.mentors : r === 'peer' ? data.peers : data.self ? [data.self] : [];
+    if (rows.length === 0) return;
     CRITERIA_12.forEach(c => {
-      const val = getVal(data[r], `scores_${c}`);
+      const val = data._getAvgVal ? data._getAvgVal(r, `scores_${c}`) : getVal(rows[0], `scores_${c}`);
       scores[r][c] = val ? parseFloat(val) : null;
     });
   });
 
   const avg = r => {
-    if (!data[r]) return null;
-    const vals = Object.values(scores[r]).filter(v => v !== null);
+    const rows = r === 'mentor' ? data.mentors : r === 'peer' ? data.peers : data.self ? [data.self] : [];
+    if (rows.length === 0) return null;
+    const vals = CRITERIA_12.map(c => scores[r][c]).filter(v => v !== null);
     return vals.length ? (vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(1) : null;
   };
 
@@ -331,7 +367,7 @@ function renderReport(name, role, data, cols, getVal) {
   Object.keys(IP_LABELS).forEach(c => {
     const ip = IP_LABELS[c];
     const selfChoice = data.self ? getVal(data.self, `ipsative_${c}`) : null;
-    const mentorChoice = data.mentor ? getVal(data.mentor, `ipsative_${c}`) : null;
+    const mentorChoice = data._getIpsative ? data._getIpsative('mentor', `ipsative_${c}`) : null;
 
     const choiceLabel = (choice) => {
       if (!choice) return '<span class="ip-na">—</span>';
@@ -350,22 +386,24 @@ function renderReport(name, role, data, cols, getVal) {
   html += `</div></div>`;
 
   // Trust
-  const mentorTrust = data.mentor ? getVal(data.mentor, 'trust_score') : null;
-  const peerTrust = data.peer ? getVal(data.peer, 'trust_score') : null;
+  const mentorTrust = data._getAvgVal ? data._getAvgVal('mentor', 'trust_score') : null;
+  const peerTrust = data._getAvgVal ? data._getAvgVal('peer', 'trust_score') : null;
+  const mentorCount = data._mentorCount ? ` · ${data._mentorCount} ментори` : '';
+  const peerCount = data._peerCount ? ` · ${data._peerCount} peer` : '';
 
   if (mentorTrust || peerTrust) {
     html += `<div class="section"><div class="section-header">Тест на довіру</div><div class="trust-grid">`;
     if (mentorTrust) {
-      html += `<div class="trust-card"><div class="trust-role mentor">Ментор</div><div class="trust-score" style="color:var(--amber)">${mentorTrust}</div><div class="trust-desc">${TRUST_DESC[mentorTrust] || ''}</div></div>`;
+      html += `<div class="trust-card"><div class="trust-role mentor">Ментор${mentorCount}</div><div class="trust-score" style="color:var(--amber)">${parseFloat(mentorTrust).toFixed(1)}</div><div class="trust-desc">${TRUST_DESC[Math.round(mentorTrust)] || ''}</div></div>`;
     }
     if (peerTrust) {
-      html += `<div class="trust-card"><div class="trust-role peer">Peer</div><div class="trust-score" style="color:var(--teal)">${peerTrust}</div><div class="trust-desc">${TRUST_DESC[peerTrust] || ''}</div></div>`;
+      html += `<div class="trust-card"><div class="trust-role peer">Peer${peerCount}</div><div class="trust-score" style="color:var(--teal)">${parseFloat(peerTrust).toFixed(1)}</div><div class="trust-desc">${TRUST_DESC[Math.round(peerTrust)] || ''}</div></div>`;
     }
     html += `</div></div>`;
   }
 
   // Redflags
-  const redflags = data.mentor ? getVal(data.mentor, 'redflags') : null;
+  const redflags = data.mentors.length > 0 ? getVal(data.mentors[0], 'redflags') : null;
   html += `<div class="section"><div class="section-header">Червоні прапорці</div>`;
   if (redflags && redflags.trim()) {
     html += `<div class="redflag-list">`;
@@ -383,27 +421,32 @@ function renderReport(name, role, data, cols, getVal) {
   html += `<div class="section"><div class="section-header">Відкриті питання та рефлексія</div>`;
 
   ['self','mentor','peer'].forEach(r => {
-    if (!data[r]) return;
+    const rows = r === 'self' ? (data.self ? [data.self] : []) :
+                 r === 'mentor' ? data.mentors : data.peers;
+    if (rows.length === 0) return;
     const qs = OPEN_QUESTIONS[r];
     const roleLabel = r === 'self' ? 'Самооцінка' : r === 'mentor' ? 'Ментор' : 'Peer';
     const roleColor = r === 'self' ? 'var(--green)' : r === 'mentor' ? 'var(--amber)' : 'var(--teal)';
 
-    qs.forEach((q, i) => {
-      const val = getVal(data[r], `open_${i+1}`);
-      if (!val || !val.trim()) return;
-      html += `
-        <div class="open-block">
-          <div class="open-role" style="color:${roleColor}">${roleLabel}</div>
-          <div class="open-q">${q}</div>
-          <div class="open-a">${val}</div>
-        </div>`;
+    rows.forEach((row, idx) => {
+      const label = rows.length > 1 ? `${roleLabel} ${idx+1}` : roleLabel;
+      qs.forEach((q, i) => {
+        const val = getVal(row, `open_${i+1}`);
+        if (!val || !val.trim()) return;
+        html += `
+          <div class="open-block">
+            <div class="open-role" style="color:${roleColor}">${label}</div>
+            <div class="open-q">${q}</div>
+            <div class="open-a">${val}</div>
+          </div>`;
+      });
     });
   });
 
   html += `</div>`;
 
   // Decision
-  const decision = data.mentor ? getVal(data.mentor, 'open_3') : null;
+  const decision = data.mentors.length > 0 ? getVal(data.mentors[0], 'open_3') : null;
   if (decision && decision.trim()) {
     html += `
       <div class="section">
