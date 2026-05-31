@@ -37,7 +37,7 @@
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; min-height: 100vh; }
-.page { max-width: 860px; margin: 0 auto; padding: 40px 24px 80px; }
+.page { max-width: 1100px; margin: 0 auto; padding: 40px 32px 80px; }
 
 /* Header */
 .logo { display: flex; align-items: center; gap: 10px; margin-bottom: 40px; }
@@ -80,32 +80,38 @@ html, body { background: var(--bg); color: var(--text); font-family: 'DM Sans', 
 .section-header { font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 500; color: var(--hint); letter-spacing: .06em; text-transform: uppercase; padding: 7px 0 12px; border-top: 1px solid var(--border); margin-bottom: 12px; }
 
 /* Gap bars */
-.criterion-row { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; margin-bottom: 7px; }
-.cr-label { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 10px; }
-.bars { display: flex; flex-direction: column; gap: 6px; }
-.bar-row { display: flex; align-items: center; gap: 10px; }
-.bar-role { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); width: 60px; flex-shrink: 0; }
-.bar-track { flex: 1; height: 8px; background: var(--s2); border-radius: 4px; overflow: hidden; }
-.bar-fill { height: 100%; border-radius: 4px; transition: width .7s cubic-bezier(.4,0,.2,1); }
+.criteria-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.criterion-row { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px; }
+.cr-label { font-size: 15px; font-weight: 500; color: var(--text); margin-bottom: 5px; }
+.bars { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+.bar-row { display: flex; align-items: center; gap: 12px; }
+.bar-role { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); width: 80px; flex-shrink: 0; }
+.bar-track { flex: 1; height: 10px; background: var(--s2); border-radius: 5px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 5px; transition: width .7s cubic-bezier(.4,0,.2,1); }
 .bar-fill.self { background: var(--green); }
 .bar-fill.mentor { background: var(--amber); }
 .bar-fill.peer { background: var(--teal); }
-.bar-val { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); width: 16px; text-align: right; flex-shrink: 0; }
+.bar-val { font-family: 'DM Mono', monospace; font-size: 13px; font-weight: 500; color: var(--text); width: 20px; text-align: right; flex-shrink: 0; }
 .gap-badge { font-family: 'DM Mono', monospace; font-size: 9px; font-weight: 500; padding: 2px 7px; border-radius: 10px; margin-left: 8px; }
 .gap-ok { background: var(--green-bg); color: var(--green); border: 1px solid var(--green-b); }
 .gap-warn { background: var(--amber-bg); color: var(--amber); border: 1px solid var(--amber-b); }
 .gap-crit { background: var(--red-bg); color: var(--red); border: 1px solid var(--red-b); }
 
 /* Ipsative */
-.ipsative-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-.ip-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; }
-.ip-criterion { font-size: 12px; font-weight: 500; color: var(--text); margin-bottom: 10px; }
-.ip-row { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
-.ip-role { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); width: 55px; flex-shrink: 0; }
-.ip-choice { font-size: 12px; color: var(--text); }
-.ip-choice.opslab { color: var(--green); font-weight: 500; }
-.ip-choice.alt { color: var(--amber); }
-.ip-na { font-size: 11px; color: var(--hint); font-style: italic; }
+.ip-block { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 18px; margin-bottom: 10px; }
+.ip-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; margin-bottom: 14px; }
+.ip-criterion { font-size: 15px; font-weight: 500; color: var(--text); }
+.ip-choices { display: flex; gap: 8px; flex-shrink: 0; }
+.ip-choice-pill { display: flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 500; border: 1px solid var(--border2); }
+.ip-choice-pill.opslab { background: var(--green-bg); color: var(--green); border-color: var(--green-b); }
+.ip-choice-pill.alt { background: var(--amber-bg); color: var(--amber); border-color: var(--amber-b); }
+.ip-choice-pill.match { background: var(--blue-bg); color: var(--blue); border-color: var(--blue-b); }
+.ip-pill-role { font-family: 'DM Mono', monospace; font-size: 9px; opacity: 0.7; }
+.ip-example { background: var(--s2); border-radius: 8px; padding: 12px 14px; }
+.ip-example-label { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--hint); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 6px; }
+.ip-example-self { font-size: 13px; color: var(--text); line-height: 1.6; margin-bottom: 8px; }
+.ip-example-mentor { font-size: 13px; color: var(--muted); line-height: 1.6; border-top: 1px solid var(--border); padding-top: 8px; }
+.ip-role-tag { font-family: 'DM Mono', monospace; font-size: 9px; font-weight: 500; text-transform: uppercase; letter-spacing: .04em; margin-right: 6px; }
 
 /* Trust */
 .trust-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
@@ -400,7 +406,9 @@ function renderReport(name, role, data, cols, getVal) {
           <span class="gap-badge gap-crit">Розрив</span> >1 — потребує обговорення
         </div>
       </div>
+
   `;
+  html += '<div class="criteria-grid">';
 
   CRITERIA_12.forEach(c => {
     const sv = scores.self[c];
@@ -419,28 +427,48 @@ function renderReport(name, role, data, cols, getVal) {
       </div>`;
   });
 
-  html += `</div><div class="section"><div class="section-header">OpsLab-підхід · Ipsative відповіді</div><div class="ipsative-grid">`;
+  html += '</div></div>';
+
+  // Ipsative — новий формат з прикладами
+  html += `<div class="section"><div class="section-header">OpsLab-підхід · Ipsative відповіді</div>`;
+
+  const IP_EXAMPLE_COLS = {
+    'валідація_запиту': 'example_1',
+    'стійкість_під_тиском': 'example_2',
+    'відповідальність': 'example_3',
+    'відвертість_у_стосунках': 'example_4'
+  };
+  const IP_EXAMPLE_LABELS_MAP = {
+    'валідація_запиту': 'Останній запит від клієнта',
+    'стійкість_під_тиском': 'Момент коли клієнт тиснув',
+    'відповідальність': 'Ситуація де щось пішло не так',
+    'відвертість_у_стосунках': 'Момент де міг підсвітити незручне'
+  };
 
   Object.keys(IP_LABELS).forEach(c => {
     const ip = IP_LABELS[c];
-    const selfChoice = data.self ? getVal(data.self, `ipsative_${c}`) : null;
-    const mentorChoice = data._getIpsative ? data._getIpsative('mentor', `ipsative_${c}`) : null;
+    const selfChoice = data.self ? getVal(data.self, 'ipsative_' + c) : null;
+    const mentorChoice = data._getIpsative ? data._getIpsative('mentor', 'ipsative_' + c) : null;
+    const selfExample = data.self ? getVal(data.self, IP_EXAMPLE_COLS[c]) : null;
+    const mentorExample = data.mentors.length > 0 ? getVal(data.mentors[0], IP_EXAMPLE_COLS[c]) : null;
+    const choicesMatch = selfChoice && mentorChoice && selfChoice === mentorChoice;
 
-    const choiceLabel = (choice) => {
-      if (!choice) return '<span class="ip-na">—</span>';
-      const isOpslab = choice === 'B';
-      return `<span class="ip-choice ${isOpslab ? 'opslab' : 'alt'}">${ip[choice] || choice}</span>`;
+    const pillClass = (choice) => {
+      if (!choice) return '';
+      if (choicesMatch) return 'match';
+      return choice === 'B' ? 'opslab' : 'alt';
     };
 
-    html += `
-      <div class="ip-card">
-        <div class="ip-criterion">${ip.q}</div>
-        <div class="ip-row"><span class="ip-role self">Самооцінка</span>${choiceLabel(selfChoice)}</div>
-        <div class="ip-row"><span class="ip-role mentor">Ментор</span>${choiceLabel(mentorChoice)}</div>
-      </div>`;
+    const selfPill = selfChoice ? '<div class="ip-choice-pill ' + pillClass(selfChoice) + '"><span class="ip-pill-role">Я</span>' + ip[selfChoice] + '</div>' : '';
+    const mentorPill = mentorChoice ? '<div class="ip-choice-pill ' + pillClass(mentorChoice) + '"><span class="ip-pill-role">Ментор</span>' + ip[mentorChoice] + '</div>' : '';
+    const selfEx = selfExample ? '<div class="ip-example-self"><span class="ip-role-tag" style="color:var(--green)">Я</span>' + selfExample + '</div>' : '';
+    const mentorEx = mentorExample ? '<div class="ip-example-mentor"><span class="ip-role-tag" style="color:var(--amber)">Ментор</span>' + mentorExample + '</div>' : '';
+    const exampleBlock = (selfExample || mentorExample) ? '<div class="ip-example"><div class="ip-example-label">' + IP_EXAMPLE_LABELS_MAP[c] + '</div>' + selfEx + mentorEx + '</div>' : '';
+
+    html += '<div class="ip-block"><div class="ip-header"><div class="ip-criterion">' + ip.q + '</div><div class="ip-choices">' + selfPill + mentorPill + '</div></div>' + exampleBlock + '</div>';
   });
 
-  html += `</div></div>`;
+  html += '</div>';
 
   // Trust
   const mentorTrust = data._getAvgVal ? data._getAvgVal('mentor', 'trust_score') : null;
