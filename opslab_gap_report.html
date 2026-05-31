@@ -67,11 +67,12 @@ html, body { background: var(--bg); color: var(--text); font-family: 'DM Sans', 
 /* Summary cards */
 .summary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 32px; }
 .summary-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; }
+.summary-card.empty { opacity: 0.4; }
 .sc-role { font-family: 'DM Mono', monospace; font-size: 9px; font-weight: 500; letter-spacing: .06em; text-transform: uppercase; margin-bottom: 8px; }
 .sc-role.self { color: var(--green); }
 .sc-role.mentor { color: var(--amber); }
 .sc-role.peer { color: var(--teal); }
-.sc-avg { font-size: 28px; font-weight: 300; letter-spacing: -.02em; }
+.sc-avg { font-size: 32px; font-weight: 300; letter-spacing: -.02em; }
 .sc-label { font-size: 11px; color: var(--muted); margin-top: 2px; }
 
 /* Section */
@@ -84,8 +85,8 @@ html, body { background: var(--bg); color: var(--text); font-family: 'DM Sans', 
 .bars { display: flex; flex-direction: column; gap: 6px; }
 .bar-row { display: flex; align-items: center; gap: 10px; }
 .bar-role { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); width: 60px; flex-shrink: 0; }
-.bar-track { flex: 1; height: 6px; background: var(--s2); border-radius: 3px; overflow: hidden; }
-.bar-fill { height: 100%; border-radius: 3px; transition: width .6s ease; }
+.bar-track { flex: 1; height: 8px; background: var(--s2); border-radius: 4px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 4px; transition: width .7s cubic-bezier(.4,0,.2,1); }
 .bar-fill.self { background: var(--green); }
 .bar-fill.mentor { background: var(--amber); }
 .bar-fill.peer { background: var(--teal); }
@@ -285,14 +286,18 @@ async function loadReport() {
 }
 
 function renderReport(name, role, data, cols, getVal) {
-  const scores = {};
+  const scores = { self: {}, mentor: {}, peer: {} };
+  // ініціалізуємо всі критерії як null
   ['self','mentor','peer'].forEach(r => {
-    scores[r] = {};
+    CRITERIA_12.forEach(c => { scores[r][c] = null; });
+  });
+
+  ['self','mentor','peer'].forEach(r => {
     const rows = r === 'mentor' ? data.mentors : r === 'peer' ? data.peers : data.self ? [data.self] : [];
     if (rows.length === 0) return;
     CRITERIA_12.forEach(c => {
       const val = data._getAvgVal ? data._getAvgVal(r, `scores_${c}`) : getVal(rows[0], `scores_${c}`);
-      scores[r][c] = val ? parseFloat(val) : null;
+      scores[r][c] = (val !== null && val !== undefined && val !== '' && !isNaN(parseFloat(val))) ? parseFloat(val) : null;
     });
   });
 
@@ -318,27 +323,31 @@ function renderReport(name, role, data, cols, getVal) {
 
   const barPct = v => v ? ((v/4)*100).toFixed(0) + '%' : '0%';
 
+  const filledCount = [data.self, data.mentors.length > 0, data.peers.length > 0].filter(Boolean).length;
+  const mentorLabel = data.mentors.length > 1 ? `Ментори · ${data.mentors.length}` : 'Ментор';
+  const peerLabel = data.peers.length > 1 ? `Peer · ${data.peers.length}` : 'Peer';
+
   let html = `
     <div class="report-header">
       <div class="report-name"><strong>${name}</strong></div>
-      <div class="report-meta">${role || 'Middle Fractional OM'} · Звіт після 3 місяців випробувального</div>
+      <div class="report-meta">${role || 'Middle Fractional OM'} · Звіт після 3 місяців · ${filledCount}/3 форм заповнено</div>
     </div>
 
     <div class="summary-grid">
-      <div class="summary-card">
+      <div class="summary-card ${!data.self ? 'empty' : ''}">
         <div class="sc-role self">Самооцінка</div>
         <div class="sc-avg">${avg('self') || '—'}</div>
-        <div class="sc-label">середнє з 4</div>
+        <div class="sc-label">${data.self ? 'середнє з 4' : 'не заповнено'}</div>
       </div>
-      <div class="summary-card">
-        <div class="sc-role mentor">Ментор</div>
+      <div class="summary-card ${data.mentors.length === 0 ? 'empty' : ''}">
+        <div class="sc-role mentor">${mentorLabel}</div>
         <div class="sc-avg">${avg('mentor') || '—'}</div>
-        <div class="sc-label">середнє з 4</div>
+        <div class="sc-label">${data.mentors.length > 0 ? 'середнє з 4' : 'не заповнено'}</div>
       </div>
-      <div class="summary-card">
-        <div class="sc-role peer">Peer</div>
+      <div class="summary-card ${data.peers.length === 0 ? 'empty' : ''}">
+        <div class="sc-role peer">${peerLabel}</div>
         <div class="sc-avg">${avg('peer') || '—'}</div>
-        <div class="sc-label">середнє з 4</div>
+        <div class="sc-label">${data.peers.length > 0 ? 'середнє з 4' : 'не заповнено'}</div>
       </div>
     </div>
 
@@ -354,9 +363,9 @@ function renderReport(name, role, data, cols, getVal) {
       <div class="criterion-row">
         <div class="cr-label">${CRITERIA_LABELS[c]}${gapBadge(sv, mv)}</div>
         <div class="bars">
-          ${sv !== null ? `<div class="bar-row"><span class="bar-role self">Самооцінка</span><div class="bar-track"><div class="bar-fill self" style="width:${barPct(sv)}"></div></div><span class="bar-val">${sv}</span></div>` : ''}
-          ${mv !== null ? `<div class="bar-row"><span class="bar-role mentor">Ментор</span><div class="bar-track"><div class="bar-fill mentor" style="width:${barPct(mv)}"></div></div><span class="bar-val">${mv}</span></div>` : ''}
-          ${pv !== null ? `<div class="bar-row"><span class="bar-role peer">Peer</span><div class="bar-track"><div class="bar-fill peer" style="width:${barPct(pv)}"></div></div><span class="bar-val">${pv}</span></div>` : ''}
+          ${sv !== null ? `<div class="bar-row"><span class="bar-role" style="color:var(--green)">Самооцінка</span><div class="bar-track"><div class="bar-fill self" style="width:${barPct(sv)}"></div></div><span class="bar-val">${sv}</span></div>` : ''}
+          ${mv !== null ? `<div class="bar-row"><span class="bar-role" style="color:var(--amber)">${mentorLabel}</span><div class="bar-track"><div class="bar-fill mentor" style="width:${barPct(mv)}"></div></div><span class="bar-val">${mv}</span></div>` : ''}
+          ${pv !== null ? `<div class="bar-row"><span class="bar-role" style="color:var(--teal)">${peerLabel}</span><div class="bar-track"><div class="bar-fill peer" style="width:${barPct(pv)}"></div></div><span class="bar-val">${pv}</span></div>` : ''}
           ${sv === null && mv === null && pv === null ? '<span class="ip-na">Дані відсутні</span>' : ''}
         </div>
       </div>`;
