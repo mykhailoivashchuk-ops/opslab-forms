@@ -87,34 +87,28 @@ const WH = 'https://hooks.zapier.com/hooks/catch/14002247/4bh0i7c/';
 const r = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
 const pick = arr => arr[Math.floor(Math.random() * arr.length)];
 
-const CRITERIA_12 = ['Рух за планом','Управління очікуваннями','Ескалація ресурсу','Ритм комунікації','Валідація запиту','Стійкість під тиском','Відповідальність','Робота з фідбеком','Освоєння нового','Відвертість у стосунках','Проактивність','Дія в невизначеності'];
-const CRITERIA_6 = ['Валідація запиту','Стійкість під тиском','Відповідальність','Освоєння нового','Відвертість у стосунках','Проактивність'];
+const CRITERIA_KEYS_12 = [
+  'рух_за_планом','управління_очікуваннями','ескалація_ресурсу','ритм_комунікації',
+  'валідація_запиту','стійкість_під_тиском','відповідальність','робота_з_фідбеком',
+  'освоєння_нового','відвертість_у_стосунках','проактивність','дія_в_невизначеності'
+];
+const CRITERIA_KEYS_6 = [
+  'валідація_запиту','стійкість_під_тиском','відповідальність',
+  'освоєння_нового','відвертість_у_стосунках','проактивність'
+];
 const IP_KEYS = ['валідація_запиту','стійкість_під_тиском','відповідальність','відвертість_у_стосунках'];
 
 function makeScores(keys, bias = 0) {
   const obj = {};
-  keys.forEach(k => { obj[k] = Math.min(4, Math.max(1, r(2, 4) + bias)); });
+  keys.forEach(k => {
+    obj['scores_' + k] = Math.min(4, Math.max(1, r(2, 4) + bias));
+  });
   return obj;
 }
 
 function makeIpsative() {
   const obj = {};
-  IP_KEYS.forEach(k => { obj[k] = pick(['A','B']); });
-  return obj;
-}
-
-function flatScores(scores, prefix) {
-  const obj = {};
-  Object.entries(scores).forEach(([k, v]) => {
-    const key = prefix + k.toLowerCase().replace(/ /g, '_');
-    obj[key] = v;
-  });
-  return obj;
-}
-
-function flatIpsative(ip) {
-  const obj = {};
-  Object.entries(ip).forEach(([k, v]) => { obj[`ipsative_${k}`] = v; });
+  IP_KEYS.forEach(k => { obj['ipsative_' + k] = pick(['A','B']); });
   return obj;
 }
 
@@ -171,7 +165,7 @@ async function sendAll() {
   document.getElementById('log').textContent = `Починаємо відправку для: ${name}\n`;
 
   // --- САМООЦІНКА ---
-  const selfScores = makeScores(CRITERIA_12, 0);
+  const selfScores = makeScores(CRITERIA_KEYS_12, 0);
   const selfIp = makeIpsative();
   const selfPayload = {
     timestamp: new Date().toISOString(),
@@ -179,8 +173,8 @@ async function sendAll() {
     evaluator_name: name,
     manager_name: name,
     manager_role: 'Middle Fractional OM',
-    ...flatScores(selfScores, 'scores_'),
-    ...flatIpsative(selfIp),
+    ...selfScores,
+    ...selfIp,
     example_1: EXAMPLES[0],
     example_2: EXAMPLES[1],
     example_3: EXAMPLES[2],
@@ -189,12 +183,12 @@ async function sendAll() {
     open_2: OPENS_SELF[1],
     open_3: OPENS_SELF[2],
   };
-  log('→ Самооцінка: ' + JSON.stringify(selfScores).slice(0,60) + '...');
+  log('→ Самооцінка: scores ' + JSON.stringify(selfScores).slice(0,80) + '...');
   await send(selfPayload, 'self');
   await new Promise(r => setTimeout(r, 800));
 
   // --- МЕНТОР ---
-  const mentorScores = makeScores(CRITERIA_12, -1); // ментор зазвичай нижче
+  const mentorScores = makeScores(CRITERIA_KEYS_12, -1);
   const mentorIp = makeIpsative();
   const mentorPayload = {
     timestamp: new Date().toISOString(),
@@ -202,8 +196,8 @@ async function sendAll() {
     evaluator_name: 'Міша Іващук',
     manager_name: name,
     manager_role: 'Middle Fractional OM',
-    ...flatScores(mentorScores, 'scores_'),
-    ...flatIpsative(mentorIp),
+    ...mentorScores,
+    ...mentorIp,
     trust_score: r(2, 4),
     example_1: EXAMPLES[0],
     example_2: EXAMPLES[1],
@@ -215,24 +209,24 @@ async function sendAll() {
     open_3: OPENS_MENTOR[2],
     open_4: OPENS_MENTOR[3],
   };
-  log('→ Ментор: ' + JSON.stringify(mentorScores).slice(0,60) + '...');
+  log('→ Ментор: scores ' + JSON.stringify(mentorScores).slice(0,80) + '...');
   await send(mentorPayload, 'mentor');
   await new Promise(r => setTimeout(r, 800));
 
   // --- PEER ---
-  const peerScores = makeScores(CRITERIA_6, 0);
+  const peerScores = makeScores(CRITERIA_KEYS_6, 0);
   const peerPayload = {
     timestamp: new Date().toISOString(),
     evaluator_role: 'peer',
     evaluator_name: 'Оксана Лесик',
     manager_name: name,
     manager_role: 'Middle Fractional OM',
-    ...flatScores(peerScores, 'scores_'),
+    ...peerScores,
     trust_score: r(2, 4),
     open_1: OPENS_PEER[0],
     open_2: OPENS_PEER[1],
   };
-  log('→ Peer: ' + JSON.stringify(peerScores).slice(0,60) + '...');
+  log('→ Peer: scores ' + JSON.stringify(peerScores).slice(0,80) + '...');
   await send(peerPayload, 'peer');
 
   log('\n✓ Готово. Відкрий звіт і введи: ' + name);
