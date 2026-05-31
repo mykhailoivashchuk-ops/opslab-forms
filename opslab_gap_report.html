@@ -259,6 +259,7 @@ async function loadReport() {
     };
 
     const managerRows = rows.filter(row => {
+      if (!row.c || row.c.every(cell => !cell || cell.v === null)) return false;
       const mn = getVal(row, 'manager_name');
       return mn && mn.toLowerCase().includes(name.toLowerCase());
     });
@@ -669,6 +670,7 @@ async function loadAvailable() {
     // Збираємо унікальних менеджерів і які ролі вже заповнили
     const managers = {};
     rows.forEach(row => {
+      if (!row.c || row.c.every(cell => !cell || cell.v === null)) return;
       const mn = getVal(row, 'manager_name');
       const role = getVal(row, 'evaluator_role');
       if (!mn) return;
