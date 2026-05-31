@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OpsLab · Peer оцінка · Випробувальний</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0D0F12;--surface:#141720;--s2:#1C2030;--border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.12);--text:#F0F2F7;--muted:#7A8099;--hint:#4A5068;--blue:#4E8FE8;--blue-bg:rgba(78,143,232,0.1);--blue-b:rgba(78,143,232,0.25);--teal:#4EA8AD;--teal-bg:rgba(78,168,173,0.1);--teal-b:rgba(78,168,173,0.25);}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;}
+.page{max-width:700px;margin:0 auto;padding:40px 24px 80px;}
+.logo{display:flex;align-items:center;gap:10px;margin-bottom:32px;}
+.logo-mark{width:28px;height:28px;border-radius:6px;background:var(--blue-bg);border:1px solid var(--blue-b);display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:10px;color:var(--blue);}
+.logo-text{font-size:13px;color:var(--muted);}
+.doc-header{margin-bottom:28px;padding-bottom:22px;border-bottom:1px solid var(--border);}
+.chip{display:inline-flex;align-items:center;font-family:'DM Mono',monospace;font-size:10px;font-weight:500;padding:3px 10px;border-radius:20px;letter-spacing:.04em;text-transform:uppercase;background:var(--teal-bg);color:var(--teal);border:1px solid var(--teal-b);margin-bottom:12px;}
+h1{font-size:22px;font-weight:300;line-height:1.25;margin-bottom:8px;letter-spacing:-.01em;}
+h1 strong{font-weight:500;}
+.doc-sub{font-size:13px;color:var(--muted);line-height:1.65;}
+.who-block{background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:16px;margin-bottom:24px;display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.fl{font-family:'DM Mono',monospace;font-size:10px;color:var(--hint);letter-spacing:.04em;text-transform:uppercase;margin-bottom:5px;}
+.fi{width:100%;background:var(--s2);border:1px solid var(--border2);border-radius:8px;padding:8px 11px;font-size:13px;color:var(--text);font-family:'DM Sans',sans-serif;outline:none;}
+.fi:focus{border-color:var(--blue-b);}
+.fi::placeholder{color:var(--hint);}
+.section{margin-bottom:24px;}
+.sh{font-family:'DM Mono',monospace;font-size:10px;font-weight:500;color:var(--hint);letter-spacing:.06em;text-transform:uppercase;padding:7px 0 11px;border-top:1px solid var(--border);margin-bottom:8px;}
+.cr{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:7px;}
+.cq{font-size:13px;font-weight:500;color:var(--text);margin-bottom:5px;line-height:1.5;}
+.ch{font-size:11px;color:var(--muted);margin-bottom:12px;line-height:1.5;font-style:italic;}
+.scale{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;}
+.so{position:relative;}
+.so input{position:absolute;opacity:0;width:0;height:0;}
+.so label{display:flex;flex-direction:column;align-items:center;gap:2px;padding:7px 4px;border:1px solid var(--border2);border-radius:8px;cursor:pointer;background:var(--s2);}
+.so input:checked+label{background:var(--blue-bg);border-color:var(--blue-b);}
+.sn{font-family:'DM Mono',monospace;font-size:13px;font-weight:500;color:var(--text);}
+.sl{font-size:10px;color:var(--muted);text-align:center;line-height:1.3;}
+.so input:checked+label .sn,.so input:checked+label .sl{color:var(--blue);}
+.trust-block{background:var(--teal-bg);border:1px solid var(--teal-b);border-radius:12px;padding:14px 16px;margin-bottom:7px;}
+.trust-q{font-size:13px;font-weight:500;color:var(--text);margin-bottom:6px;line-height:1.5;}
+.trust-hint{font-size:11px;color:var(--muted);margin-bottom:12px;line-height:1.5;font-style:italic;}
+.trust-opts{display:flex;flex-direction:column;gap:5px;}
+.to{position:relative;}
+.to input{position:absolute;opacity:0;width:0;height:0;}
+.to label{display:flex;align-items:flex-start;gap:9px;padding:9px 12px;border:1px solid var(--teal-b);border-radius:8px;cursor:pointer;background:var(--s2);}
+.to input:checked+label{background:var(--teal-bg);border-color:var(--teal-b);}
+.il{font-family:'DM Mono',monospace;font-size:10px;font-weight:500;color:var(--hint);flex-shrink:0;margin-top:1px;}
+.it{font-size:12px;color:var(--muted);line-height:1.5;}
+.to input:checked+label .il{color:var(--teal);}
+.to input:checked+label .it{color:var(--text);}
+.oq{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:7px;}
+.oq-label{font-size:13px;font-weight:500;color:var(--text);margin-bottom:8px;line-height:1.5;}
+textarea{width:100%;background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:8px 11px;font-size:12px;color:var(--muted);font-family:'DM Sans',sans-serif;resize:vertical;min-height:64px;outline:none;line-height:1.55;}
+textarea:focus{border-color:var(--blue-b);color:var(--text);}
+textarea::placeholder{color:var(--hint);}
+.btn{width:100%;padding:13px;background:var(--blue-bg);border:1px solid var(--blue-b);border-radius:10px;color:var(--blue);font-size:14px;font-weight:500;font-family:'DM Sans',sans-serif;cursor:pointer;margin-top:24px;}
+.btn:hover{background:rgba(78,143,232,0.18);}
+.btn:disabled{opacity:.4;cursor:not-allowed;}
+.success{display:none;text-align:center;padding:56px 24px;}
+.success-title{font-size:20px;font-weight:500;margin-bottom:8px;}
+.success-sub{font-size:14px;color:var(--muted);}
+</style>
+</head>
+<body>
+<div class="page">
+<div class="logo"><div class="logo-mark">OL</div><div class="logo-text">OpsLab · Оцінювання випробувального</div></div>
+
+<div id="fc">
+<div class="doc-header">
+<div class="chip">Peer оцінка</div>
+<h1>Оцінка <strong>колеги</strong> після 3 місяців</h1>
+<p class="doc-sub">Оцінюй тільки те що реально спостерігав у спільній роботі. Якщо не було можливості побачити — краще пропусти або напиши "не спостерігав".</p>
+</div>
+
+<div class="who-block">
+<div><div class="fl">Твоє імʼя</div><input class="fi" id="ev_name" placeholder="Імʼя Прізвище"></div>
+<div><div class="fl">Кого оцінюєш</div><input class="fi" id="mg_name" placeholder="Імʼя менеджера"></div>
+</div>
+
+<div class="section">
+<div class="sh">Частина 1 · Оцінка по критеріях</div>
+
+<div class="cr">
+<div class="cq">Валідація запиту</div>
+<div class="ch">Наскільки ця людина перевіряє реальну потребу за запитом — чи просто виконує те що сказали.</div>
+<div class="scale">
+<div class="so"><input type="radio" name="s1" value="1" id="s1-1"><label for="s1-1"><span class="sn">1</span><span class="sl">Не відповідає</span></label></div>
+<div class="so"><input type="radio" name="s1" value="2" id="s1-2"><label for="s1-2"><span class="sn">2</span><span class="sl">Частково</span></label></div>
+<div class="so"><input type="radio" name="s1" value="3" id="s1-3"><label for="s1-3"><span class="sn">3</span><span class="sl">Стабільно</span></label></div>
+<div class="so"><input type="radio" name="s1" value="4" id="s1-4"><label for="s1-4"><span class="sn">4</span><span class="sl">Перевищує</span></label></div>
+</div></div>
+
+<div class="cr">
+<div class="cq">Стійкість під тиском</div>
+<div class="ch">Як людина тримає позицію і ясність коли є тиск або складні ситуації.</div>
+<div class="scale">
+<div class="so"><input type="radio" name="s2" value="1" id="s2-1"><label for="s2-1"><span class="sn">1</span><span class="sl">Не відповідає</span></label></div>
+<div class="so"><input type="radio" name="s2" value="2" id="s2-2"><label for="s2-2"><span class="sn">2</span><span class="sl">Частково</span></label></div>
+<div class="so"><input type="radio" name="s2" value="3" id="s2-3"><label for="s2-3"><span class="sn">3</span><span class="sl">Стабільно</span></label></div>
+<div class="so"><input type="radio" name="s2" value="4" id="s2-4"><label for="s2-4"><span class="sn">4</span><span class="sl">Перевищує</span></label></div>
+</div></div>
+
+<div class="cr">
+<div class="cq">Відповідальність</div>
+<div class="ch">Чи людина починає з власної частини коли щось йде не так — чи шукає причину зовні.</div>
+<div class="scale">
+<div class="so"><input type="radio" name="s3" value="1" id="s3-1"><label for="s3-1"><span class="sn">1</span><span class="sl">Не відповідає</span></label></div>
+<div class="so"><input type="radio" name="s3" value="2" id="s3-2"><label for="s3-2"><span class="sn">2</span><span class="sl">Частково</span></label></div>
+<div class="so"><input type="radio" name="s3" value="3" id="s3-3"><label for="s3-3"><span class="sn">3</span><span class="sl">Стабільно</span></label></div>
+<div class="so"><input type="radio" name="s3" value="4" id="s3-4"><label for="s3-4"><span class="sn">4</span><span class="sl">Перевищує</span></label></div>
+</div></div>
+
+<div class="cr">
+<div class="cq">Освоєння нового</div>
+<div class="ch">Наскільки людина самостійно входить в нові ситуації або інструменти без покрокового супроводу.</div>
+<div class="scale">
+<div class="so"><input type="radio" name="s4" value="1" id="s4-1"><label for="s4-1"><span class="sn">1</span><span class="sl">Не відповідає</span></label></div>
+<div class="so"><input type="radio" name="s4" value="2" id="s4-2"><label for="s4-2"><span class="sn">2</span><span class="sl">Частково</span></label></div>
+<div class="so"><input type="radio" name="s4" value="3" id="s4-3"><label for="s4-3"><span class="sn">3</span><span class="sl">Стабільно</span></label></div>
+<div class="so"><input type="radio" name="s4" value="4" id="s4-4"><label for="s4-4"><span class="sn">4</span><span class="sl">Перевищує</span></label></div>
+</div></div>
+
+<div class="cr">
+<div class="cq">Відвертість у стосунках</div>
+<div class="ch">Наскільки людина говорить чесно — підсвічує проблеми і незручне, а не замовчує.</div>
+<div class="scale">
+<div class="so"><input type="radio" name="s5" value="1" id="s5-1"><label for="s5-1"><span class="sn">1</span><span class="sl">Не відповідає</span></label></div>
+<div class="so"><input type="radio" name="s5" value="2" id="s5-2"><label for="s5-2"><span class="sn">2</span><span class="sl">Частково</span></label></div>
+<div class="so"><input type="radio" name="s5" value="3" id="s5-3"><label for="s5-3"><span class="sn">3</span><span class="sl">Стабільно</span></label></div>
+<div class="so"><input type="radio" name="s5" value="4" id="s5-4"><label for="s5-4"><span class="sn">4</span><span class="sl">Перевищує</span></label></div>
+</div></div>
+
+<div class="cr">
+<div class="cq">Проактивність</div>
+<div class="ch">Чи людина сама підсвічує важливе і рухається вперед до того як її попросять.</div>
+<div class="scale">
+<div class="so"><input type="radio" name="s6" value="1" id="s6-1"><label for="s6-1"><span class="sn">1</span><span class="sl">Не відповідає</span></label></div>
+<div class="so"><input type="radio" name="s6" value="2" id="s6-2"><label for="s6-2"><span class="sn">2</span><span class="sl">Частково</span></label></div>
+<div class="so"><input type="radio" name="s6" value="3" id="s6-3"><label for="s6-3"><span class="sn">3</span><span class="sl">Стабільно</span></label></div>
+<div class="so"><input type="radio" name="s6" value="4" id="s6-4"><label for="s6-4"><span class="sn">4</span><span class="sl">Перевищує</span></label></div>
+</div></div>
+</div>
+
+<div class="section">
+<div class="sh">Частина 2 · Перевірочне питання</div>
+<div class="trust-block">
+<div class="trust-q">Якби тобі треба було передати свого клієнта на тиждень — чи розглядав би цю людину як варіант?</div>
+<div class="trust-hint">Відповідай чесно — це не про дружбу, а про довіру до підходу і самостійності.</div>
+<div class="trust-opts">
+<div class="to"><input type="radio" name="trust" value="1" id="t1"><label for="t1"><span class="il">1</span><span class="it">Ні — є серйозні сумніви щодо самостійності або підходу</span></label></div>
+<div class="to"><input type="radio" name="trust" value="2" id="t2"><label for="t2"><span class="il">2</span><span class="it">Скоріше ні — є питання які мене зупиняють</span></label></div>
+<div class="to"><input type="radio" name="trust" value="3" id="t3"><label for="t3"><span class="il">3</span><span class="it">Так з детальним брифом і можливістю звʼязатись</span></label></div>
+<div class="to"><input type="radio" name="trust" value="4" id="t4"><label for="t4"><span class="il">4</span><span class="it">Так без вагань — людина впорається самостійно</span></label></div>
+</div>
+</div>
+</div>
+
+<div class="section">
+<div class="sh">Частина 3 · Відкриті питання</div>
+<div class="oq">
+<div class="oq-label">Що найбільше вразило тебе в роботі цієї людини за ці 3 місяці?</div>
+<textarea id="o1" placeholder="Конкретна ситуація або поведінка..."></textarea>
+</div>
+<div class="oq">
+<div class="oq-label">Що б ти порадив цій людині розвивати далі?</div>
+<textarea id="o2" placeholder="Зона росту або паттерн який помітив..."></textarea>
+</div>
+</div>
+
+<button class="btn" id="sbtn" onclick="submit()">Відправити peer оцінку</button>
+</div>
+
+<div class="success" id="succ">
+<div class="success-title">Дякуємо</div>
+<div class="success-sub" style="margin-top:8px;">Твою оцінку отримано. Результати зʼявляться у фінальному звіті.</div>
+</div>
+</div>
+
+<script>
+const WH='https://hooks.zapier.com/hooks/catch/14002247/4bh0i7c/';
+const scales=['s1','s2','s3','s4','s5','s6'];
+const slabels=['Валідація запиту','Стійкість під тиском','Відповідальність','Освоєння нового','Відвертість у стосунках','Проактивність'];
+
+async function submit(){
+  const name=document.getElementById('ev_name').value.trim();
+  const mgname=document.getElementById('mg_name').value.trim();
+  if(!name||!mgname){alert('Вкажи своє імʼя і імʼя менеджера');return;}
+  const scores={};
+  for(let i=0;i<scales.length;i++){const s=document.querySelector(`input[name="${scales[i]}"]:checked`);if(!s){alert('Будь ласка заповни всі критерії');return;}scores[slabels[i]]=parseInt(s.value);}
+  const trust=document.querySelector('input[name="trust"]:checked');
+  if(!trust){alert('Будь ласка відповідь на перевірочне питання');return;}
+  const payload={
+    timestamp:new Date().toISOString(),evaluator_role:'peer',
+    evaluator_name:name,manager_name:mgname,
+    scores:JSON.stringify(scores),
+    trust_score:trust.value,
+    open_1:document.getElementById('o1').value,
+    open_2:document.getElementById('o2').value,
+  };
+  const btn=document.getElementById('sbtn');btn.disabled=true;btn.textContent='Відправляємо...';
+  try{await fetch(WH,{method:'POST',mode:'no-cors',body:JSON.stringify(payload)});document.getElementById('fc').style.display='none';document.getElementById('succ').style.display='block';}
+  catch(e){alert('Щось пішло не так. Спробуй ще раз.');btn.disabled=false;btn.textContent='Відправити peer оцінку';}
+}
+</script>
+</body>
+</html>
