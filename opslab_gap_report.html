@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OpsLab · Gap Analysis · Випробувальний</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0D0F12;
+  --surface: #141720;
+  --s2: #1C2030;
+  --s3: #222840;
+  --border: rgba(255,255,255,0.07);
+  --border2: rgba(255,255,255,0.12);
+  --text: #F0F2F7;
+  --muted: #7A8099;
+  --hint: #4A5068;
+  --blue: #4E8FE8;
+  --blue-bg: rgba(78,143,232,0.12);
+  --blue-b: rgba(78,143,232,0.3);
+  --green: #4EAD7A;
+  --green-bg: rgba(78,173,122,0.12);
+  --green-b: rgba(78,173,122,0.3);
+  --amber: #D4933A;
+  --amber-bg: rgba(212,147,58,0.12);
+  --amber-b: rgba(212,147,58,0.3);
+  --red: #C95F5F;
+  --red-bg: rgba(201,95,95,0.12);
+  --red-b: rgba(201,95,95,0.3);
+  --purple: #9B7DE8;
+  --purple-bg: rgba(155,125,232,0.12);
+  --purple-b: rgba(155,125,232,0.3);
+  --teal: #4EA8AD;
+  --teal-bg: rgba(78,168,173,0.12);
+  --teal-b: rgba(78,168,173,0.3);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; min-height: 100vh; }
+.page { max-width: 860px; margin: 0 auto; padding: 40px 24px 80px; }
+
+/* Header */
+.logo { display: flex; align-items: center; gap: 10px; margin-bottom: 40px; }
+.logo-mark { width: 28px; height: 28px; border-radius: 6px; background: var(--blue-bg); border: 1px solid var(--blue-b); display: flex; align-items: center; justify-content: center; font-family: 'DM Mono', monospace; font-size: 10px; color: var(--blue); }
+.logo-text { font-size: 13px; color: var(--muted); }
+
+/* Search */
+.search-block { background: var(--surface); border: 1px solid var(--border2); border-radius: 14px; padding: 20px; margin-bottom: 32px; }
+.search-title { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 12px; }
+.search-row { display: flex; gap: 10px; }
+.search-input { flex: 1; background: var(--s2); border: 1px solid var(--border2); border-radius: 8px; padding: 9px 12px; font-size: 13px; color: var(--text); font-family: 'DM Sans', sans-serif; outline: none; }
+.search-input:focus { border-color: var(--blue-b); }
+.search-input::placeholder { color: var(--hint); }
+.search-btn { padding: 9px 20px; background: var(--blue-bg); border: 1px solid var(--blue-b); border-radius: 8px; color: var(--blue); font-size: 13px; font-weight: 500; font-family: 'DM Sans', sans-serif; cursor: pointer; white-space: nowrap; }
+.search-btn:hover { background: rgba(78,143,232,0.2); }
+.search-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.search-status { font-size: 12px; color: var(--muted); margin-top: 8px; }
+
+/* Report */
+#report { display: none; }
+
+.report-header { margin-bottom: 32px; padding-bottom: 24px; border-bottom: 1px solid var(--border); }
+.report-name { font-size: 26px; font-weight: 300; letter-spacing: -.01em; margin-bottom: 6px; }
+.report-name strong { font-weight: 500; }
+.report-meta { font-size: 13px; color: var(--muted); }
+
+/* Summary cards */
+.summary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 32px; }
+.summary-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; }
+.sc-role { font-family: 'DM Mono', monospace; font-size: 9px; font-weight: 500; letter-spacing: .06em; text-transform: uppercase; margin-bottom: 8px; }
+.sc-role.self { color: var(--green); }
+.sc-role.mentor { color: var(--amber); }
+.sc-role.peer { color: var(--teal); }
+.sc-avg { font-size: 28px; font-weight: 300; letter-spacing: -.02em; }
+.sc-label { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+/* Section */
+.section { margin-bottom: 28px; }
+.section-header { font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 500; color: var(--hint); letter-spacing: .06em; text-transform: uppercase; padding: 7px 0 12px; border-top: 1px solid var(--border); margin-bottom: 12px; }
+
+/* Gap bars */
+.criterion-row { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; margin-bottom: 7px; }
+.cr-label { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 10px; }
+.bars { display: flex; flex-direction: column; gap: 6px; }
+.bar-row { display: flex; align-items: center; gap: 10px; }
+.bar-role { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); width: 60px; flex-shrink: 0; }
+.bar-track { flex: 1; height: 6px; background: var(--s2); border-radius: 3px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 3px; transition: width .6s ease; }
+.bar-fill.self { background: var(--green); }
+.bar-fill.mentor { background: var(--amber); }
+.bar-fill.peer { background: var(--teal); }
+.bar-val { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); width: 16px; text-align: right; flex-shrink: 0; }
+.gap-badge { font-family: 'DM Mono', monospace; font-size: 9px; font-weight: 500; padding: 2px 7px; border-radius: 10px; margin-left: 8px; }
+.gap-ok { background: var(--green-bg); color: var(--green); border: 1px solid var(--green-b); }
+.gap-warn { background: var(--amber-bg); color: var(--amber); border: 1px solid var(--amber-b); }
+.gap-crit { background: var(--red-bg); color: var(--red); border: 1px solid var(--red-b); }
+
+/* Ipsative */
+.ipsative-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.ip-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; }
+.ip-criterion { font-size: 12px; font-weight: 500; color: var(--text); margin-bottom: 10px; }
+.ip-row { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
+.ip-role { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); width: 55px; flex-shrink: 0; }
+.ip-choice { font-size: 12px; color: var(--text); }
+.ip-choice.opslab { color: var(--green); font-weight: 500; }
+.ip-choice.alt { color: var(--amber); }
+.ip-na { font-size: 11px; color: var(--hint); font-style: italic; }
+
+/* Trust */
+.trust-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.trust-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; text-align: center; }
+.trust-role { font-family: 'DM Mono', monospace; font-size: 9px; font-weight: 500; letter-spacing: .06em; text-transform: uppercase; margin-bottom: 8px; }
+.trust-score { font-size: 36px; font-weight: 300; letter-spacing: -.02em; margin-bottom: 4px; }
+.trust-desc { font-size: 11px; color: var(--muted); line-height: 1.4; }
+
+/* Redflags */
+.redflag-list { background: var(--red-bg); border: 1px solid var(--red-b); border-radius: 12px; padding: 14px 16px; }
+.rf-item { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 6px; font-size: 12px; color: var(--muted); line-height: 1.5; }
+.rf-item:last-child { margin-bottom: 0; }
+.rf-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--red); flex-shrink: 0; margin-top: 5px; }
+.no-flags { font-size: 12px; color: var(--green); }
+
+/* Open questions */
+.open-block { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; margin-bottom: 7px; }
+.open-role { font-family: 'DM Mono', monospace; font-size: 9px; font-weight: 500; letter-spacing: .06em; text-transform: uppercase; margin-bottom: 6px; color: var(--hint); }
+.open-q { font-size: 12px; font-weight: 500; color: var(--muted); margin-bottom: 6px; }
+.open-a { font-size: 13px; color: var(--text); line-height: 1.65; }
+
+/* Decision */
+.decision-block { background: var(--green-bg); border: 1px solid var(--green-b); border-radius: 12px; padding: 16px 18px; }
+.decision-label { font-family: 'DM Mono', monospace; font-size: 9px; font-weight: 500; letter-spacing: .06em; text-transform: uppercase; color: var(--green); margin-bottom: 8px; }
+.decision-text { font-size: 14px; color: var(--text); line-height: 1.65; }
+
+.empty-state { text-align: center; padding: 48px 24px; color: var(--muted); font-size: 14px; }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="logo">
+    <div class="logo-mark">OL</div>
+    <div class="logo-text">OpsLab · Gap Analysis · Випробувальний</div>
+  </div>
+
+  <div class="search-block">
+    <div class="search-title">Знайти звіт по менеджеру</div>
+    <div class="search-row">
+      <input type="text" class="search-input" id="manager-input" placeholder="Введи імʼя менеджера точно як у формі...">
+      <button class="search-btn" id="search-btn" onclick="loadReport()">Завантажити звіт</button>
+    </div>
+    <div class="search-status" id="search-status"></div>
+  </div>
+
+  <div id="report"></div>
+</div>
+
+<script>
+const SHEET_ID = '1H1Zx_6icLzk6eMuRXTSD_VKiqITEx-7CoHfqAtpNoz0';
+const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
+
+const CRITERIA_12 = [
+  'рух_за_планом','управління_очікуваннями','ескалація_ресурсу','ритм_комунікації',
+  'валідація_запиту','стійкість_під_тиском','відповідальність','робота_з_фідбеком',
+  'освоєння_нового','відвертість_у_стосунках','проактивність','дія_в_невизначеності'
+];
+const CRITERIA_LABELS = {
+  'рух_за_планом':'Рух за планом','управління_очікуваннями':'Управління очікуваннями',
+  'ескалація_ресурсу':'Ескалація ресурсу','ритм_комунікації':'Ритм комунікації',
+  'валідація_запиту':'Валідація запиту','стійкість_під_тиском':'Стійкість під тиском',
+  'відповідальність':'Відповідальність','робота_з_фідбеком':'Робота з фідбеком',
+  'освоєння_нового':'Освоєння нового','відвертість_у_стосунках':'Відвертість у стосунках',
+  'проактивність':'Проактивність','дія_в_невизначеності':'Дія в невизначеності'
+};
+const IP_LABELS = {
+  'валідація_запиту': {
+    q: 'Валідація запиту',
+    A: 'Дати результат на запит', B: 'Знайти реальну потребу за запитом'
+  },
+  'стійкість_під_тиском': {
+    q: 'Стійкість під тиском',
+    A: 'Зняти напругу і зберегти стосунки', B: 'Відповісти на справжній запит'
+  },
+  'відповідальність': {
+    q: 'Відповідальність',
+    A: 'Аналізував зовнішні фактори', B: 'Починав зі своєї частини'
+  },
+  'відвертість_у_стосунках': {
+    q: 'Відвертість у стосунках',
+    A: 'Зберегти комфортну атмосферу', B: 'Сказати чесно навіть якщо незручно'
+  }
+};
+const TRUST_DESC = {
+  '1':'Ні в якому разі','2':'З серйозними побоюваннями','3':'Спокійно з брифом','4':'Абсолютно спокійно'
+};
+const OPEN_QUESTIONS = {
+  self: ['Найсильніший момент за 3 місяці','Що давалось найважче','Що б зробив інакше'],
+  mentor: ['Найсильніший момент і потенціал','Системний виклик і зона росту','Рішення після випробувального','Що змінити в онбордингу'],
+  peer: ['Що найбільше вразило','Що б порадив розвивати']
+};
+
+async function loadReport() {
+  const name = document.getElementById('manager-input').value.trim();
+  if (!name) { setStatus('Введи імʼя менеджера'); return; }
+
+  const btn = document.getElementById('search-btn');
+  btn.disabled = true;
+  setStatus('Завантажуємо дані...');
+
+  try {
+    const res = await fetch(SHEET_URL + '&sheet=Sheet1');
+    const text = await res.text();
+    const json = JSON.parse(text.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\)/)[1]);
+    const rows = json.table.rows;
+    const cols = json.table.cols.map(c => c.label);
+
+    const getVal = (row, colName) => {
+      const idx = cols.indexOf(colName);
+      if (idx < 0) return null;
+      const cell = row.c[idx];
+      return cell && cell.v !== null ? String(cell.v) : null;
+    };
+
+    const managerRows = rows.filter(row => {
+      const mn = getVal(row, 'manager_name');
+      return mn && mn.toLowerCase().includes(name.toLowerCase());
+    });
+
+    if (managerRows.length === 0) {
+      setStatus(`Не знайдено даних для "${name}". Перевір імʼя.`);
+      btn.disabled = false;
+      return;
+    }
+
+    const data = { self: null, mentor: null, peer: null };
+    managerRows.forEach(row => {
+      const role = getVal(row, 'evaluator_role');
+      if (role === 'self') data.self = row;
+      else if (role === 'mentor') data.mentor = row;
+      else if (role === 'peer') data.peer = row;
+    });
+
+    const managerName = getVal(managerRows[0], 'manager_name');
+    const managerRole = data.self ? getVal(data.self, 'manager_role') : '';
+
+    setStatus(`Знайдено: ${managerRows.length} відповід${managerRows.length === 1 ? 'ь' : 'і'}`);
+    renderReport(managerName, managerRole, data, cols, getVal);
+  } catch(e) {
+    setStatus('Помилка завантаження. Перевір доступ до таблиці.');
+    console.error(e);
+  }
+  btn.disabled = false;
+}
+
+function renderReport(name, role, data, cols, getVal) {
+  const scores = {};
+  ['self','mentor','peer'].forEach(r => {
+    scores[r] = {};
+    if (!data[r]) return;
+    CRITERIA_12.forEach(c => {
+      const val = getVal(data[r], `scores_${c}`);
+      scores[r][c] = val ? parseFloat(val) : null;
+    });
+  });
+
+  const avg = r => {
+    if (!data[r]) return null;
+    const vals = Object.values(scores[r]).filter(v => v !== null);
+    return vals.length ? (vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(1) : null;
+  };
+
+  const gap = (a, b) => {
+    if (a === null || b === null) return null;
+    return Math.abs(a - b);
+  };
+
+  const gapBadge = (selfVal, mentorVal) => {
+    const g = gap(selfVal, mentorVal);
+    if (g === null) return '';
+    if (g <= 0.5) return '<span class="gap-badge gap-ok">Збіг</span>';
+    if (g <= 1) return '<span class="gap-badge gap-warn">±' + g.toFixed(1) + '</span>';
+    return '<span class="gap-badge gap-crit">Розрив ' + g.toFixed(1) + '</span>';
+  };
+
+  const barPct = v => v ? ((v/4)*100).toFixed(0) + '%' : '0%';
+
+  let html = `
+    <div class="report-header">
+      <div class="report-name"><strong>${name}</strong></div>
+      <div class="report-meta">${role || 'Middle Fractional OM'} · Звіт після 3 місяців випробувального</div>
+    </div>
+
+    <div class="summary-grid">
+      <div class="summary-card">
+        <div class="sc-role self">Самооцінка</div>
+        <div class="sc-avg">${avg('self') || '—'}</div>
+        <div class="sc-label">середнє з 4</div>
+      </div>
+      <div class="summary-card">
+        <div class="sc-role mentor">Ментор</div>
+        <div class="sc-avg">${avg('mentor') || '—'}</div>
+        <div class="sc-label">середнє з 4</div>
+      </div>
+      <div class="summary-card">
+        <div class="sc-role peer">Peer</div>
+        <div class="sc-avg">${avg('peer') || '—'}</div>
+        <div class="sc-label">середнє з 4</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header">Gap Analysis · 12 критеріїв</div>
+  `;
+
+  CRITERIA_12.forEach(c => {
+    const sv = scores.self[c];
+    const mv = scores.mentor[c];
+    const pv = scores.peer[c];
+    html += `
+      <div class="criterion-row">
+        <div class="cr-label">${CRITERIA_LABELS[c]}${gapBadge(sv, mv)}</div>
+        <div class="bars">
+          ${sv !== null ? `<div class="bar-row"><span class="bar-role self">Самооцінка</span><div class="bar-track"><div class="bar-fill self" style="width:${barPct(sv)}"></div></div><span class="bar-val">${sv}</span></div>` : ''}
+          ${mv !== null ? `<div class="bar-row"><span class="bar-role mentor">Ментор</span><div class="bar-track"><div class="bar-fill mentor" style="width:${barPct(mv)}"></div></div><span class="bar-val">${mv}</span></div>` : ''}
+          ${pv !== null ? `<div class="bar-row"><span class="bar-role peer">Peer</span><div class="bar-track"><div class="bar-fill peer" style="width:${barPct(pv)}"></div></div><span class="bar-val">${pv}</span></div>` : ''}
+          ${sv === null && mv === null && pv === null ? '<span class="ip-na">Дані відсутні</span>' : ''}
+        </div>
+      </div>`;
+  });
+
+  html += `</div><div class="section"><div class="section-header">OpsLab-підхід · Ipsative відповіді</div><div class="ipsative-grid">`;
+
+  Object.keys(IP_LABELS).forEach(c => {
+    const ip = IP_LABELS[c];
+    const selfChoice = data.self ? getVal(data.self, `ipsative_${c}`) : null;
+    const mentorChoice = data.mentor ? getVal(data.mentor, `ipsative_${c}`) : null;
+
+    const choiceLabel = (choice) => {
+      if (!choice) return '<span class="ip-na">—</span>';
+      const isOpslab = choice === 'B';
+      return `<span class="ip-choice ${isOpslab ? 'opslab' : 'alt'}">${ip[choice] || choice}</span>`;
+    };
+
+    html += `
+      <div class="ip-card">
+        <div class="ip-criterion">${ip.q}</div>
+        <div class="ip-row"><span class="ip-role self">Самооцінка</span>${choiceLabel(selfChoice)}</div>
+        <div class="ip-row"><span class="ip-role mentor">Ментор</span>${choiceLabel(mentorChoice)}</div>
+      </div>`;
+  });
+
+  html += `</div></div>`;
+
+  // Trust
+  const mentorTrust = data.mentor ? getVal(data.mentor, 'trust_score') : null;
+  const peerTrust = data.peer ? getVal(data.peer, 'trust_score') : null;
+
+  if (mentorTrust || peerTrust) {
+    html += `<div class="section"><div class="section-header">Тест на довіру</div><div class="trust-grid">`;
+    if (mentorTrust) {
+      html += `<div class="trust-card"><div class="trust-role mentor">Ментор</div><div class="trust-score" style="color:var(--amber)">${mentorTrust}</div><div class="trust-desc">${TRUST_DESC[mentorTrust] || ''}</div></div>`;
+    }
+    if (peerTrust) {
+      html += `<div class="trust-card"><div class="trust-role peer">Peer</div><div class="trust-score" style="color:var(--teal)">${peerTrust}</div><div class="trust-desc">${TRUST_DESC[peerTrust] || ''}</div></div>`;
+    }
+    html += `</div></div>`;
+  }
+
+  // Redflags
+  const redflags = data.mentor ? getVal(data.mentor, 'redflags') : null;
+  html += `<div class="section"><div class="section-header">Червоні прапорці</div>`;
+  if (redflags && redflags.trim()) {
+    html += `<div class="redflag-list">`;
+    redflags.split(',').forEach(f => {
+      const t = f.trim();
+      if (t) html += `<div class="rf-item"><div class="rf-dot"></div>${t}</div>`;
+    });
+    html += `</div>`;
+  } else {
+    html += `<div class="open-block"><span class="no-flags">Червоних прапорців не зафіксовано</span></div>`;
+  }
+  html += `</div>`;
+
+  // Open questions
+  html += `<div class="section"><div class="section-header">Відкриті питання та рефлексія</div>`;
+
+  ['self','mentor','peer'].forEach(r => {
+    if (!data[r]) return;
+    const qs = OPEN_QUESTIONS[r];
+    const roleLabel = r === 'self' ? 'Самооцінка' : r === 'mentor' ? 'Ментор' : 'Peer';
+    const roleColor = r === 'self' ? 'var(--green)' : r === 'mentor' ? 'var(--amber)' : 'var(--teal)';
+
+    qs.forEach((q, i) => {
+      const val = getVal(data[r], `open_${i+1}`);
+      if (!val || !val.trim()) return;
+      html += `
+        <div class="open-block">
+          <div class="open-role" style="color:${roleColor}">${roleLabel}</div>
+          <div class="open-q">${q}</div>
+          <div class="open-a">${val}</div>
+        </div>`;
+    });
+  });
+
+  html += `</div>`;
+
+  // Decision
+  const decision = data.mentor ? getVal(data.mentor, 'open_3') : null;
+  if (decision && decision.trim()) {
+    html += `
+      <div class="section">
+        <div class="section-header">Рішення після випробувального</div>
+        <div class="decision-block">
+          <div class="decision-label">Ментор · Фінальне рішення</div>
+          <div class="decision-text">${decision}</div>
+        </div>
+      </div>`;
+  }
+
+  const reportEl = document.getElementById('report');
+  reportEl.innerHTML = html;
+  reportEl.style.display = 'block';
+  reportEl.scrollIntoView({ behavior: 'smooth' });
+}
+
+function setStatus(msg) {
+  document.getElementById('search-status').textContent = msg;
+}
+
+document.getElementById('manager-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') loadReport();
+});
+</script>
+</body>
+</html>
