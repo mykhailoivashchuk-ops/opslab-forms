@@ -170,6 +170,11 @@ html, body { background: var(--bg); color: var(--text); font-family: 'DM Sans', 
     <div class="search-status" id="search-status"></div>
   </div>
 
+  <div id="available-block" style="margin-bottom:28px;display:none;">
+    <div style="font-family:'DM Mono',monospace;font-size:10px;font-weight:500;color:var(--hint);letter-spacing:.06em;text-transform:uppercase;padding:7px 0 12px;border-top:1px solid var(--border);margin-bottom:10px;">Доступні звіти</div>
+    <div id="available-list" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
+  </div>
+
   <div id="report"></div>
 </div>
 
@@ -244,13 +249,13 @@ async function loadReport() {
     const text = await res.text();
     const json = JSON.parse(text.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\)/)[1]);
     const rows = json.table.rows;
-    const cols = json.table.cols.map(c => c.label);
+    const cols = json.table.cols.map(c => c.label.trim());
 
     const getVal = (row, colName) => {
-      const idx = cols.indexOf(colName);
+      const idx = cols.findIndex(c => c.trim() === colName.trim());
       if (idx < 0) return null;
       const cell = row.c[idx];
-      return cell && cell.v !== null ? String(cell.v) : null;
+      return cell && cell.v !== null ? String(cell.v).trim() : null;
     };
 
     const managerRows = rows.filter(row => {
@@ -645,6 +650,68 @@ function setStatus(msg) {
 document.getElementById('manager-input').addEventListener('keydown', e => {
   if (e.key === 'Enter') loadReport();
 });
+
+async function loadAvailable() {
+  try {
+    const res = await fetch(SHEET_URL + '&sheet=Sheet1');
+    const text = await res.text();
+    const json = JSON.parse(text.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\)/)[1]);
+    const rows = json.table.rows;
+    const cols = json.table.cols.map(c => c.label.trim());
+
+    const getVal = (row, colName) => {
+      const idx = cols.findIndex(c => c.trim() === colName.trim());
+      if (idx < 0) return null;
+      const cell = row.c[idx];
+      return cell && cell.v !== null ? String(cell.v).trim() : null;
+    };
+
+    // Збираємо унікальних менеджерів і які ролі вже заповнили
+    const managers = {};
+    rows.forEach(row => {
+      const mn = getVal(row, 'manager_name');
+      const role = getVal(row, 'evaluator_role');
+      if (!mn) return;
+      if (!managers[mn]) managers[mn] = { self: false, mentor: false, peer: false };
+      if (role) managers[mn][role] = true;
+    });
+
+    if (Object.keys(managers).length === 0) return;
+
+    const list = document.getElementById('available-list');
+    list.innerHTML = '';
+
+    Object.entries(managers).forEach(([name, roles]) => {
+      const total = [roles.self, roles.mentor, roles.peer].filter(Boolean).length;
+      const card = document.createElement('div');
+      card.style.cssText = 'background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:10px 14px;cursor:pointer;transition:border-color .15s;';
+      card.onmouseenter = () => card.style.borderColor = 'var(--blue-b)';
+      card.onmouseleave = () => card.style.borderColor = 'var(--border2)';
+      card.onclick = () => {
+        document.getElementById('manager-input').value = name;
+        loadReport();
+      };
+
+      const dots = [
+        { role: 'self', color: 'var(--green)', label: 'С' },
+        { role: 'mentor', color: 'var(--amber)', label: 'М' },
+        { role: 'peer', color: 'var(--teal)', label: 'P' },
+      ].map(d => `<span style="display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:${roles[d.role] ? d.color : 'var(--s3)'};font-family:'DM Mono',monospace;font-size:8px;font-weight:500;color:${roles[d.role] ? 'var(--bg)' : 'var(--hint)'};">${d.label}</span>`).join('');
+
+      card.innerHTML = `
+        <div style="font-size:13px;font-weight:500;color:var(--text);margin-bottom:6px;">${name}</div>
+        <div style="display:flex;align-items:center;gap:4px;">${dots}<span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-left:4px;">${total}/3</span></div>
+      `;
+      list.appendChild(card);
+    });
+
+    document.getElementById('available-block').style.display = 'block';
+  } catch(e) {
+    console.log('Could not load available reports', e);
+  }
+}
+
+loadAvailable();
 </script>
 </body>
 </html>
