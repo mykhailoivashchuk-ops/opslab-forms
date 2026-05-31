@@ -132,7 +132,20 @@ html, body { background: var(--bg); color: var(--text); font-family: 'DM Sans', 
 .decision-label { font-family: 'DM Mono', monospace; font-size: 9px; font-weight: 500; letter-spacing: .06em; text-transform: uppercase; color: var(--green); margin-bottom: 8px; }
 .decision-text { font-size: 14px; color: var(--text); line-height: 1.65; }
 
-.empty-state { text-align: center; padding: 48px 24px; color: var(--muted); font-size: 14px; }
+.legend-block { background: var(--s2); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; margin-bottom: 14px; }
+.legend-title { font-size: 11px; font-weight: 500; color: var(--muted); margin-bottom: 10px; text-transform: uppercase; letter-spacing: .04em; font-family: 'DM Mono', monospace; }
+.legend-grid { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 10px; }
+.legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); }
+.legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.legend-scale { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 10px; }
+.legend-scale-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); }
+.scale-badge { font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 500; color: var(--text); background: var(--s3); padding: 1px 6px; border-radius: 4px; }
+.legend-gaps { font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+.cr-desc { font-size: 11px; color: var(--hint); margin-bottom: 10px; line-height: 1.5; font-style: italic; }
+.discussion-intro { font-size: 12px; color: var(--muted); margin-bottom: 12px; line-height: 1.6; }
+.discussion-q { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; margin-bottom: 7px; }
+.dq-type { font-family: 'DM Mono', monospace; font-size: 9px; font-weight: 500; letter-spacing: .06em; text-transform: uppercase; margin-bottom: 6px; }
+.dq-text { font-size: 13px; color: var(--text); line-height: 1.65; }
 </style>
 </head>
 <body>
@@ -189,7 +202,20 @@ const IP_LABELS = {
     A: 'Зберегти комфортну атмосферу', B: 'Сказати чесно навіть якщо незручно'
   }
 };
-const TRUST_DESC = {
+const CRITERIA_DESC = {
+  'рух_за_планом': 'Клієнт завжди знає статус і наступний крок без того щоб питати.',
+  'управління_очікуваннями': 'Утримує рамки і домовленості навіть під тиском клієнта.',
+  'ескалація_ресурсу': 'Своєчасно сигналізує коли навантаження або терміни під загрозою — до того як стало критично.',
+  'ритм_комунікації': 'Передбачуваний у звʼязку — відповідає в межах 2 годин, дає summary після дзвінків.',
+  'валідація_запиту': 'Бачить різницю між тим що клієнт просить і тим що йому насправді потрібно.',
+  'стійкість_під_тиском': 'Зберігає позицію і ясність коли клієнт тисне або реагує агресивно.',
+  'відповідальність': 'Починає з власної частини коли щось пішло не так — а не з зовнішніх факторів.',
+  'робота_з_фідбеком': 'Видима зміна поведінки після фідбеку — той самий момент не повторюється.',
+  'освоєння_нового': 'Самостійно входить в нові інструменти або ситуації без покрокового супроводу.',
+  'відвертість_у_стосунках': 'Формує простір де можна говорити чесно про проблеми і підсвічувати те що клієнт не бачить.',
+  'проактивність': 'Ініціює підсвічення статусу, ризиків і наступних кроків до того як запитають.',
+  'дія_в_невизначеності': 'Рухається і приймає рішення коли немає чіткої інструкції або прецеденту.'
+};
   '1':'Ні в якому разі','2':'З серйозними побоюваннями','3':'Спокійно з брифом','4':'Абсолютно спокійно'
 };
 const OPEN_QUESTIONS = {
@@ -353,6 +379,26 @@ function renderReport(name, role, data, cols, getVal) {
 
     <div class="section">
       <div class="section-header">Gap Analysis · 12 критеріїв</div>
+
+      <div class="legend-block">
+        <div class="legend-title">Як читати цей звіт</div>
+        <div class="legend-grid">
+          <div class="legend-item"><span class="legend-dot" style="background:var(--green)"></span><span>Самооцінка — як менеджер бачить себе</span></div>
+          <div class="legend-item"><span class="legend-dot" style="background:var(--amber)"></span><span>Ментор — оцінка від Delivery/керівника</span></div>
+          <div class="legend-item"><span class="legend-dot" style="background:var(--teal)"></span><span>Peer — оцінка від колег по команді</span></div>
+        </div>
+        <div class="legend-scale">
+          <div class="legend-scale-item"><span class="scale-badge">1</span> Не відповідає очікуванням Middle OM</div>
+          <div class="legend-scale-item"><span class="scale-badge">2</span> Частково — є але нестабільно</div>
+          <div class="legend-scale-item"><span class="scale-badge">3</span> Стабільно — демонструє без нагадувань</div>
+          <div class="legend-scale-item"><span class="scale-badge">4</span> Перевищує — робить глибше ніж очікується</div>
+        </div>
+        <div class="legend-gaps">
+          <span class="gap-badge gap-ok">Збіг</span> розрив ≤0.5 · 
+          <span class="gap-badge gap-warn">±1.0</span> є відмінності · 
+          <span class="gap-badge gap-crit">Розрив</span> >1 — потребує обговорення
+        </div>
+      </div>
   `;
 
   CRITERIA_12.forEach(c => {
@@ -362,6 +408,7 @@ function renderReport(name, role, data, cols, getVal) {
     html += `
       <div class="criterion-row">
         <div class="cr-label">${CRITERIA_LABELS[c]}${gapBadge(sv, mv)}</div>
+        <div class="cr-desc">${CRITERIA_DESC[c]}</div>
         <div class="bars">
           ${sv !== null ? `<div class="bar-row"><span class="bar-role" style="color:var(--green)">Самооцінка</span><div class="bar-track"><div class="bar-fill self" style="width:${barPct(sv)}"></div></div><span class="bar-val">${sv}</span></div>` : ''}
           ${mv !== null ? `<div class="bar-row"><span class="bar-role" style="color:var(--amber)">${mentorLabel}</span><div class="bar-track"><div class="bar-fill mentor" style="width:${barPct(mv)}"></div></div><span class="bar-val">${mv}</span></div>` : ''}
@@ -465,6 +512,95 @@ function renderReport(name, role, data, cols, getVal) {
           <div class="decision-text">${decision}</div>
         </div>
       </div>`;
+  }
+
+  // Auto-generated discussion questions
+  const discussionQs = [];
+
+  // Великі розриви між самооцінкою і ментором
+  CRITERIA_12.forEach(c => {
+    const sv = scores.self[c];
+    const mv = scores.mentor[c];
+    if (sv !== null && mv !== null) {
+      const g = sv - mv;
+      if (g >= 1.5) {
+        discussionQs.push({
+          type: 'gap-high',
+          text: `По критерію <strong>${CRITERIA_LABELS[c]}</strong> ти оцінив себе на ${sv} а ментор на ${mv}. Що конкретно ти мав на увазі оцінюючи себе вище? Які ситуації ти враховував?`
+        });
+      } else if (g <= -1.5) {
+        discussionQs.push({
+          type: 'gap-low',
+          text: `По критерію <strong>${CRITERIA_LABELS[c]}</strong> ментор оцінив тебе вище ніж ти сам — ${mv} проти ${sv}. Що заважає тобі бачити цей рівень в собі?`
+        });
+      }
+    }
+  });
+
+  // Ipsative розриви
+  const ipCriteria = Object.keys(IP_LABELS);
+  ipCriteria.forEach(c => {
+    const selfChoice = data.self ? getVal(data.self, `ipsative_${c}`) : null;
+    const mentorChoice = data._getIpsative ? data._getIpsative('mentor', `ipsative_${c}`) : null;
+    if (selfChoice && mentorChoice && selfChoice !== mentorChoice) {
+      const ip = IP_LABELS[c];
+      discussionQs.push({
+        type: 'ipsative',
+        text: `По ситуації <strong>${ip.q}</strong> ти обрав "${ip[selfChoice]}" а ментор бачить "${ip[mentorChoice]}". Як би ти пояснив свій вибір? Чи був це усвідомлений підхід?`
+      });
+    }
+  });
+
+  // Червоні прапорці
+  const flags = data.mentors.length > 0 ? getVal(data.mentors[0], 'redflags') : null;
+  if (flags && flags.trim()) {
+    discussionQs.push({
+      type: 'redflag',
+      text: `Ментор зафіксував червоні прапорці. Що з твого боку можна було зробити інакше щоб уникнути цих ситуацій?`
+    });
+  }
+
+  // Низькі оцінки ментора
+  CRITERIA_12.forEach(c => {
+    const mv = scores.mentor[c];
+    if (mv !== null && mv <= 1.5) {
+      discussionQs.push({
+        type: 'low',
+        text: `Критерій <strong>${CRITERIA_LABELS[c]}</strong> отримав найнижчу оцінку від ментора. Що конкретно заважало? Що б ти зробив інакше?`
+      });
+    }
+  });
+
+  // Завжди додаємо базові питання
+  discussionQs.push({ type: 'base', text: 'Що з цих 3 місяців ти вважаєш своїм найважливішим досягненням — і чому саме це?' });
+  discussionQs.push({ type: 'base', text: 'Що тебе найбільше здивувало в цій роботі — позитивно або негативно?' });
+  discussionQs.push({ type: 'base', text: 'Якби ти починав знову — що б зробив інакше в перший місяць?' });
+
+  if (discussionQs.length > 0) {
+    html += `
+      <div class="section">
+        <div class="section-header">Питання для фінальної розмови</div>
+        <div class="discussion-intro">Питання сформовані автоматично на основі розривів у звіті. Використовуй як відправну точку для розмови.</div>`;
+
+    const typeLabels = {
+      'gap-high': { label: 'Розрив · висока самооцінка', color: 'var(--amber)' },
+      'gap-low': { label: 'Розрив · занижена самооцінка', color: 'var(--blue)' },
+      'ipsative': { label: 'Різниця в підході', color: 'var(--purple)' },
+      'redflag': { label: 'Червоний прапорець', color: 'var(--red)' },
+      'low': { label: 'Зона росту', color: 'var(--red)' },
+      'base': { label: 'Базове питання', color: 'var(--hint)' },
+    };
+
+    discussionQs.forEach(q => {
+      const tl = typeLabels[q.type];
+      html += `
+        <div class="discussion-q">
+          <div class="dq-type" style="color:${tl.color}">${tl.label}</div>
+          <div class="dq-text">${q.text}</div>
+        </div>`;
+    });
+
+    html += `</div>`;
   }
 
   const reportEl = document.getElementById('report');
