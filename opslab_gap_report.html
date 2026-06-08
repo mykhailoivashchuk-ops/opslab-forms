@@ -153,6 +153,34 @@ html, body { background: var(--bg); color: var(--text); font-family: 'DM Sans', 
 .dq-type { font-family: 'DM Mono', monospace; font-size: 9px; font-weight: 500; letter-spacing: .06em; text-transform: uppercase; margin-bottom: 6px; }
 .dq-text { font-size: 13px; color: var(--text); line-height: 1.65; }
 .open-intro { font-size: 12px; color: var(--muted); margin-bottom: 14px; line-height: 1.6; }
+/* Ipsative improvements */
+.ip-q-label { font-size: 11px; color: var(--muted); margin-bottom: 4px; line-height: 1.5; }
+.ip-variants { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 12px 0 8px; }
+.ip-variant { padding: 10px 12px; border-radius: 8px; background: var(--s2); border: 1px solid var(--border); font-size: 12px; color: var(--muted); display: flex; align-items: flex-start; gap: 8px; }
+.ip-variant.highlighted-a { border-color: var(--amber-b); }
+.ip-variant.highlighted-b { border-color: var(--green-b); color: var(--text); }
+.ip-v-label { font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 500; color: var(--hint); flex-shrink: 0; margin-top: 1px; }
+.ip-opslab-note { font-size: 11px; color: var(--purple); background: var(--purple-bg); border: 1px solid var(--purple-b); border-radius: 6px; padding: 5px 10px; margin-bottom: 10px; }
+/* Interpretation */
+.interp-grade { border: 1px solid; border-radius: 12px; padding: 16px 18px; margin-bottom: 16px; }
+.interp-grade-label { font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 500; letter-spacing: .06em; text-transform: uppercase; margin-bottom: 6px; }
+.interp-grade-text { font-size: 16px; font-weight: 500; color: var(--text); margin-bottom: 6px; }
+.interp-grade-avg { font-size: 13px; color: var(--muted); }
+.interp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+.interp-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; }
+.interp-card-title { font-size: 13px; font-weight: 500; margin-bottom: 6px; }
+.interp-sub { font-size: 11px; color: var(--muted); margin-bottom: 8px; }
+.interp-item { display: flex; align-items: flex-start; gap: 8px; font-size: 12px; color: var(--muted); margin-bottom: 5px; line-height: 1.4; }
+.interp-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
+.interp-opslab { background: var(--purple-bg); border: 1px solid var(--purple-b); border-radius: 12px; padding: 14px 16px; }
+/* Comment */
+.comment-intro { font-size: 12px; color: var(--muted); margin-bottom: 10px; line-height: 1.6; }
+.mentor-comment { width: 100%; background: var(--s2); border: 1px solid var(--border2); border-radius: 8px; padding: 10px 12px; font-size: 13px; color: var(--text); font-family: 'DM Sans', sans-serif; resize: vertical; min-height: 100px; outline: none; line-height: 1.6; margin-bottom: 10px; }
+.mentor-comment:focus { border-color: var(--blue-b); }
+.comment-btn { padding: 9px 20px; background: var(--blue-bg); border: 1px solid var(--blue-b); border-radius: 8px; color: var(--blue); font-size: 13px; font-weight: 500; font-family: 'DM Sans', sans-serif; cursor: pointer; }
+.comment-btn:hover { background: rgba(78,143,232,0.2); }
+.comment-btn:disabled { opacity: .4; cursor: not-allowed; }
+.comment-status { font-size: 12px; margin-top: 8px; }
 .open-compare-block { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px; margin-bottom: 8px; }
 .ocb-q { font-size: 14px; font-weight: 500; color: var(--text); margin-bottom: 14px; }
 .ocb-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
@@ -205,19 +233,35 @@ const CRITERIA_LABELS = {
 const IP_LABELS = {
   'валідація_запиту': {
     q: 'Валідація запиту',
-    A: 'Дати результат на запит', B: 'Знайти реальну потребу за запитом'
+    question_self: 'Що для тебе було важливішим коли клієнт прийшов з конкретним запитом?',
+    question_mentor: 'Як ти оцінюєш підхід менеджера в ситуації з запитом від клієнта?',
+    A: 'Зрозуміти що клієнт хоче і дати результат',
+    B: 'Зрозуміти чому клієнт це хоче і чи це вирішить реальну проблему',
+    opslab_note: 'OpsLab-підхід — спочатку діагностика, потім рішення'
   },
   'стійкість_під_тиском': {
     q: 'Стійкість під тиском',
-    A: 'Зняти напругу і зберегти стосунки', B: 'Відповісти на справжній запит'
+    question_self: 'Що для тебе було важливішим коли клієнт тиснув або різко реагував?',
+    question_mentor: 'Що було в основі реакції менеджера коли клієнт тиснув?',
+    A: 'Зняти напругу і зберегти стосунки з клієнтом',
+    B: 'Зрозуміти що стоїть за реакцією і відповісти на справжній запит',
+    opslab_note: 'OpsLab-підхід — шукати реальний запит за емоцією, не уникати конфлікту'
   },
   'відповідальність': {
     q: 'Відповідальність',
-    A: 'Аналізував зовнішні фактори', B: 'Починав зі своєї частини'
+    question_self: 'Де ти шукав причину в першу чергу коли щось пішло не так?',
+    question_mentor: 'Де менеджер шукав причину коли щось пішло не так?',
+    A: 'Аналізував зовнішні фактори — клієнт, обставини, контекст',
+    B: 'Починав зі своєї частини — що міг зробити інакше',
+    opslab_note: 'OpsLab-підхід — спочатку власна частина відповідальності'
   },
   'відвертість_у_стосунках': {
     q: 'Відвертість у стосунках',
-    A: 'Зберегти комфортну атмосферу', B: 'Сказати чесно навіть якщо незручно'
+    question_self: 'Що тебе рухало коли міг підсвітити клієнту щось складне або незручне?',
+    question_mentor: 'Що рухало менеджером коли міг підсвітити незручне?',
+    A: 'Зберегти комфортну атмосферу і не загострювати',
+    B: 'Сказати чесно навіть якщо незручно — бо це важливо для результату',
+    opslab_note: 'OpsLab-підхід — відвертість важливіша за комфорт'
   }
 };
 const CRITERIA_DESC = {
@@ -512,7 +556,19 @@ function renderReport(name, role, data, cols, getVal) {
     const mentorEx = mentorExample ? '<div class="ip-example-mentor"><span class="ip-role-tag" style="color:var(--amber)">Ментор</span>' + mentorExample + '</div>' : '';
     const exampleBlock = (selfExample || mentorExample) ? '<div class="ip-example"><div class="ip-example-label">' + IP_EXAMPLE_LABELS_MAP[c] + '</div>' + selfEx + mentorEx + '</div>' : '';
 
-    html += '<div class="ip-block"><div class="ip-header"><div class="ip-criterion">' + ip.q + '</div><div class="ip-choices">' + selfPill + mentorPill + '</div></div>' + exampleBlock + '</div>';
+    const variantsBlock = '<div class="ip-variants">' +
+      '<div class="ip-variant ' + (selfChoice === 'A' || mentorChoice === 'A' ? 'highlighted-a' : '') + '"><span class="ip-v-label">А</span>' + ip.A + '</div>' +
+      '<div class="ip-variant ' + (selfChoice === 'B' || mentorChoice === 'B' ? 'highlighted-b' : '') + '"><span class="ip-v-label">Б</span>' + ip.B + '</div>' +
+      '</div>';
+    const opsNote = '<div class="ip-opslab-note">' + ip.opslab_note + '</div>';
+    const selfQ = '<div class="ip-q-label" style="color:var(--green)">Я: ' + ip.question_self + '</div>';
+    const mentorQ = '<div class="ip-q-label" style="color:var(--amber)">Ментор: ' + ip.question_mentor + '</div>';
+
+    html += '<div class="ip-block">' +
+      '<div class="ip-header"><div class="ip-criterion">' + ip.q + '</div><div class="ip-choices">' + selfPill + mentorPill + '</div></div>' +
+      selfQ + mentorQ +
+      variantsBlock + opsNote +
+      exampleBlock + '</div>';
   });
 
   html += '</div>';
@@ -631,7 +687,73 @@ function renderReport(name, role, data, cols, getVal) {
   }
 
 
-    const reportEl = document.getElementById('report');
+
+  // === INTERPRETATION BLOCK ===
+  const allScores = CRITERIA_12.map(c => ({
+    label: CRITERIA_LABELS[c], key: c,
+    self: scores.self[c], mentor: scores.mentor[c], peer: scores.peer[c]
+  })).filter(s => s.mentor !== null);
+
+  const matches = allScores.filter(s => s.self !== null && Math.abs(s.self - s.mentor) <= 0.5)
+    .sort((a,b) => b.mentor - a.mentor).slice(0,3);
+  const gaps = allScores.filter(s => s.self !== null && Math.abs(s.self - s.mentor) > 1)
+    .sort((a,b) => Math.abs(b.self - b.mentor) - Math.abs(a.self - a.mentor)).slice(0,3);
+  const strengths = allScores.filter(s => s.mentor >= 3.5);
+  const growthAreas = allScores.filter(s => s.mentor <= 2);
+
+  const validScores = allScores.filter(s => s.mentor !== null);
+  const mentorAvgNum = validScores.length ? validScores.reduce((a,b)=>a+b.mentor,0)/validScores.length : 0;
+
+  let gradeText, gradeColor;
+  if (mentorAvgNum >= 3.5) { gradeText = 'Грейд підтверджено з запасом'; gradeColor = 'var(--green)'; }
+  else if (mentorAvgNum >= 2.8) { gradeText = 'Грейд підтверджено'; gradeColor = 'var(--green)'; }
+  else if (mentorAvgNum >= 2.2) { gradeText = 'Грейд під питанням — є системні зони нижче очікувань'; gradeColor = 'var(--amber)'; }
+  else { gradeText = 'Грейд не підтверджено'; gradeColor = 'var(--red)'; }
+
+  const ipRes = Object.keys(IP_LABELS).map(c => ({
+    label: IP_LABELS[c].q,
+    selfB: data.self ? getVal(data.self, 'ipsative_' + c) === 'B' : null,
+    mentorB: data._getIpsative ? data._getIpsative('mentor', 'ipsative_' + c) === 'B' : null
+  }));
+  const selfOpslabCount = ipRes.filter(r => r.selfB === true).length;
+  const mentorOpslabCount = ipRes.filter(r => r.mentorB === true).length;
+
+  const itemHtml = (s, color) => '<div class="interp-item"><span class="interp-dot" style="background:'+color+'"></span>'+s+'</div>';
+
+  html += '<div class="section"><div class="section-header">Інтерпретація · Загальний висновок</div>';
+  html += '<div class="interp-grade" style="border-color:'+gradeColor+';background:'+gradeColor+'22">' +
+    '<div class="interp-grade-label" style="color:'+gradeColor+'">'+(role||'Middle Fractional OM')+' · Грейд</div>' +
+    '<div class="interp-grade-text">'+gradeText+'</div>' +
+    '<div class="interp-grade-avg">Середня оцінка ментора: <strong>'+mentorAvgNum.toFixed(1)+'</strong> / 4</div>' +
+    '</div>';
+
+  html += '<div class="interp-grid">';
+  if (strengths.length) html += '<div class="interp-card"><div class="interp-card-title" style="color:var(--green)">Сильні сторони · ментор ≥ 3.5</div>' + strengths.map(s=>itemHtml(s.label,'var(--green)')).join('') + '</div>';
+  if (growthAreas.length) html += '<div class="interp-card"><div class="interp-card-title" style="color:var(--amber)">Зони росту · ментор ≤ 2</div>' + growthAreas.map(s=>itemHtml(s.label,'var(--amber)')).join('') + '</div>';
+  if (matches.length) html += '<div class="interp-card"><div class="interp-card-title" style="color:var(--blue)">Збіг в оцінці</div><div class="interp-sub">Самооцінка і ментор бачать однаково</div>' + matches.map(s=>itemHtml(s.label+' ('+s.self+' / '+s.mentor+')','var(--blue)')).join('') + '</div>';
+  if (gaps.length) html += '<div class="interp-card"><div class="interp-card-title" style="color:var(--red)">Розриви в оцінці</div><div class="interp-sub">Варто обговорити на фінальній зустрічі</div>' + gaps.map(s=>itemHtml(s.label+' — я: '+s.self+', ментор: '+s.mentor,'var(--red)')).join('') + '</div>';
+  html += '</div>';
+
+  html += '<div class="interp-opslab">' +
+    '<div class="interp-card-title" style="color:var(--purple)">OpsLab-підхід на рівні мислення</div>' +
+    '<div class="interp-sub" style="margin-bottom:12px">Скільки разів обрано OpsLab-підхід (варіант Б) з 4 ipsative питань</div>' +
+    '<div style="display:flex;gap:28px">' +
+    '<div><span style="color:var(--green);font-size:28px;font-weight:300">'+selfOpslabCount+'/'+ipRes.length+'</span><div style="font-size:11px;color:var(--muted);margin-top:3px">Самооцінка</div></div>' +
+    '<div><span style="color:var(--amber);font-size:28px;font-weight:300">'+mentorOpslabCount+'/'+ipRes.length+'</span><div style="font-size:11px;color:var(--muted);margin-top:3px">Ментор бачить</div></div>' +
+    '</div></div>';
+  html += '</div>';
+
+  // === COMMENT FIELD ===
+  const mgNameForComment = managerName;
+  html += '<div class="section"><div class="section-header">Коментар після фінальної розмови</div>' +
+    '<div class="comment-intro">Заповни після того як обговорили звіт. Відправляється окремо в таблицю.</div>' +
+    '<textarea class="mentor-comment" id="mentor-comment" placeholder="Фінальний коментар, домовленості, наступні кроки..."></textarea>' +
+    '<button class="comment-btn" onclick="submitComment(\''+mgNameForComment+'\')">Зберегти коментар</button>' +
+    '<div class="comment-status" id="comment-status"></div>' +
+    '</div>';
+
+
+      const reportEl = document.getElementById('report');
   reportEl.innerHTML = html;
   reportEl.style.display = 'block';
   reportEl.scrollIntoView({ behavior: 'smooth' });
@@ -639,6 +761,33 @@ function renderReport(name, role, data, cols, getVal) {
 
 function setStatus(msg) {
   document.getElementById('search-status').textContent = msg;
+}
+
+async function submitComment(managerName) {
+  const comment = document.getElementById('mentor-comment').value.trim();
+  if (!comment) { alert('Введи коментар перш ніж зберегти'); return; }
+  const btn = event.target;
+  btn.disabled = true;
+  btn.textContent = 'Зберігаємо...';
+  try {
+    await fetch('https://hooks.zapier.com/hooks/catch/14002247/4bh0i7c/', {
+      method: 'POST', mode: 'no-cors',
+      body: JSON.stringify({
+        timestamp: new Date().toISOString(),
+        evaluator_role: 'final_comment',
+        evaluator_name: 'Ментор',
+        manager_name: managerName,
+        open_1: comment
+      })
+    });
+    document.getElementById('comment-status').textContent = '✓ Коментар збережено';
+    document.getElementById('comment-status').style.color = 'var(--green)';
+  } catch(e) {
+    document.getElementById('comment-status').textContent = 'Помилка. Спробуй ще раз.';
+    document.getElementById('comment-status').style.color = 'var(--red)';
+    btn.disabled = false;
+    btn.textContent = 'Зберегти коментар';
+  }
 }
 
 document.getElementById('manager-input').addEventListener('keydown', e => {
