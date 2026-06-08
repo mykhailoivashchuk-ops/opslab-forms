@@ -152,6 +152,13 @@ html, body { background: var(--bg); color: var(--text); font-family: 'DM Sans', 
 .discussion-q { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; margin-bottom: 7px; }
 .dq-type { font-family: 'DM Mono', monospace; font-size: 9px; font-weight: 500; letter-spacing: .06em; text-transform: uppercase; margin-bottom: 6px; }
 .dq-text { font-size: 13px; color: var(--text); line-height: 1.65; }
+.open-intro { font-size: 12px; color: var(--muted); margin-bottom: 14px; line-height: 1.6; }
+.open-compare-block { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px; margin-bottom: 8px; }
+.ocb-q { font-size: 14px; font-weight: 500; color: var(--text); margin-bottom: 14px; }
+.ocb-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.ocb-col { background: var(--s2); border-radius: 8px; padding: 12px 14px; }
+.ocb-role { font-family: 'DM Mono', monospace; font-size: 9px; font-weight: 500; letter-spacing: .06em; text-transform: uppercase; margin-bottom: 8px; }
+.ocb-text { font-size: 13px; color: var(--text); line-height: 1.65; }
 </style>
 </head>
 <body>
@@ -230,6 +237,16 @@ const CRITERIA_DESC = {
 const TRUST_DESC = {
   '1':'Ні в якому разі','2':'З серйозними побоюваннями','3':'Спокійно з брифом','4':'Абсолютно спокійно'
 };
+const REDFLAG_LABELS = {
+  'rf1': 'Уникав або відкладав пряму комунікацію з клієнтом',
+  'rf2': 'Приходив за допомогою без жодного власного варіанту',
+  'rf3': 'Отримував один і той самий фідбек більше одного разу',
+  'rf4': 'Чекав на постановку задачі замість формулювати самостійно',
+  'rf5': 'Накопичував ситуацію мовчки замість ескалювати вчасно',
+  'rf6': 'Пропустив дедлайн без попередження',
+  'rf7': 'Перекладав відповідальність на зовнішні фактори системно',
+};
+
 const OPEN_QUESTIONS = {
   self: ['Найсильніший момент за 3 місяці','Що давалось найважче','Що б зробив інакше'],
   mentor: ['Найсильніший момент і потенціал','Системний виклик і зона росту','Рішення після випробувального','Що змінити в онбордингу'],
@@ -252,7 +269,10 @@ async function loadReport() {
     const cols = json.table.cols.map(c => c.label.trim());
 
     const getVal = (row, colName) => {
-      const idx = cols.findIndex(c => c.trim() === colName.trim());
+      let idx = cols.findIndex(c => c.trim() === colName.trim());
+      if (idx < 0 && colName === 'manager_name') {
+        idx = cols.findIndex(c => c.trim().startsWith('manager_nam'));
+      }
       if (idx < 0) return null;
       const cell = row.c[idx];
       return cell && cell.v !== null ? String(cell.v).trim() : null;
@@ -296,6 +316,7 @@ async function loadReport() {
 
     // Функція для отримання усередненого значення
     data._getAvgVal = (role, col) => {
+      if (role === 'self') return data.self ? getVal(data.self, col) : null;
       const rows = role === 'mentor' ? data.mentors : role === 'peer' ? data.peers : [];
       if (rows.length === 0) return null;
       if (rows.length === 1) return getVal(rows[0], col);
@@ -436,7 +457,27 @@ function renderReport(name, role, data, cols, getVal) {
   html += '</div></div>';
 
   // Ipsative — новий формат з прикладами
-  html += `<div class="section"><div class="section-header">OpsLab-підхід · Ipsative відповіді</div>`;
+  html += `<div class="section"><div class="section-header">OpsLab-підхід · Ipsative відповіді</div>
+    <div class="legend-block" style="margin-bottom:14px;">
+      <div class="legend-title">Як читати ipsative відповіді</div>
+      <div style="font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:10px;">
+        Для кожної ситуації менеджер і ментор обирали між двома варіантами — обидва звучать прийнятно, але описують різну логіку мислення. Немає очевидно "правильного" варіанту, тому вибір показує реальний підхід.
+      </div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;">
+        <div style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--muted);">
+          <span style="display:inline-block;padding:3px 10px;border-radius:12px;background:var(--green-bg);color:var(--green);border:1px solid var(--green-b);font-size:11px;font-weight:500;">OpsLab підхід</span>
+          Варіант Б — діагностує глибше, бере відповідальність, говорить чесно
+        </div>
+        <div style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--muted);">
+          <span style="display:inline-block;padding:3px 10px;border-radius:12px;background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-b);font-size:11px;font-weight:500;">Альтернативний</span>
+          Варіант А — теж прийнятний але менш глибокий підхід
+        </div>
+        <div style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--muted);">
+          <span style="display:inline-block;padding:3px 10px;border-radius:12px;background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-b);font-size:11px;font-weight:500;">Збіг</span>
+          Менеджер і ментор обрали однаково
+        </div>
+      </div>
+    </div>`;
 
   const IP_EXAMPLE_COLS = {
     'валідація_запиту': 'example_1',
@@ -497,10 +538,11 @@ function renderReport(name, role, data, cols, getVal) {
   const redflags = data.mentors.length > 0 ? getVal(data.mentors[0], 'redflags') : null;
   html += `<div class="section"><div class="section-header">Червоні прапорці</div>`;
   if (redflags && redflags.trim()) {
+    const flagItems = redflags.split(',').map(f => f.trim()).filter(Boolean);
+    const resolvedFlags = flagItems.map(f => REDFLAG_LABELS[f] || f);
     html += `<div class="redflag-list">`;
-    redflags.split(',').forEach(f => {
-      const t = f.trim();
-      if (t) html += `<div class="rf-item"><div class="rf-dot"></div>${t}</div>`;
+    resolvedFlags.forEach(t => {
+      html += `<div class="rf-item"><div class="rf-dot"></div>${t}</div>`;
     });
     html += `</div>`;
   } else {
@@ -508,29 +550,68 @@ function renderReport(name, role, data, cols, getVal) {
   }
   html += `</div>`;
 
-  // Open questions
+  // Open questions — двоколонковий layout: самооцінка зліва, ментор справа
   html += `<div class="section"><div class="section-header">Відкриті питання та рефлексія</div>`;
+  html += `<div class="open-intro">Відповіді менеджера і ментора на однакові питання — поруч для порівняння.</div>`;
 
-  ['self','mentor','peer'].forEach(r => {
-    const rows = r === 'self' ? (data.self ? [data.self] : []) :
-                 r === 'mentor' ? data.mentors : data.peers;
-    if (rows.length === 0) return;
-    const qs = OPEN_QUESTIONS[r];
-    const roleLabel = r === 'self' ? 'Самооцінка' : r === 'mentor' ? 'Ментор' : 'Peer';
-    const roleColor = r === 'self' ? 'var(--green)' : r === 'mentor' ? 'var(--amber)' : 'var(--teal)';
+  const selfRow = data.self;
+  const mentorRow = data.mentors.length > 0 ? data.mentors[0] : null;
 
-    rows.forEach((row, idx) => {
-      const label = rows.length > 1 ? `${roleLabel} ${idx+1}` : roleLabel;
-      qs.forEach((q, i) => {
-        const val = getVal(row, `open_${i+1}`);
-        if (!val || !val.trim()) return;
-        html += `
-          <div class="open-block">
-            <div class="open-role" style="color:${roleColor}">${label}</div>
-            <div class="open-q">${q}</div>
-            <div class="open-a">${val}</div>
-          </div>`;
-      });
+  const sharedQs = [
+    { q: 'Найсильніший момент за 3 місяці', selfKey: 'open_1', mentorKey: 'open_1' },
+    { q: 'Системний виклик / що давалось найважче', selfKey: 'open_2', mentorKey: 'open_2' },
+  ];
+
+  sharedQs.forEach(({q, selfKey, mentorKey}) => {
+    const sv = selfRow ? getVal(selfRow, selfKey) : null;
+    const mv = mentorRow ? getVal(mentorRow, mentorKey) : null;
+    if (!sv && !mv) return;
+    html += `<div class="open-compare-block">
+      <div class="ocb-q">${q}</div>
+      <div class="ocb-cols">
+        <div class="ocb-col">
+          <div class="ocb-role" style="color:var(--green)">Самооцінка</div>
+          <div class="ocb-text">${sv || '<span style="color:var(--hint);font-style:italic">Не заповнено</span>'}</div>
+        </div>
+        <div class="ocb-col">
+          <div class="ocb-role" style="color:var(--amber)">Ментор</div>
+          <div class="ocb-text">${mv || '<span style="color:var(--hint);font-style:italic">Не заповнено</span>'}</div>
+        </div>
+      </div>
+    </div>`;
+  });
+
+  // Self open_3 — що б зробив інакше
+  const selfOpen3 = selfRow ? getVal(selfRow, 'open_3') : null;
+  if (selfOpen3) {
+    html += `<div class="open-block">
+      <div class="open-role" style="color:var(--green)">Самооцінка</div>
+      <div class="open-q">Якби починав знову — що б зробив інакше?</div>
+      <div class="open-a">${selfOpen3}</div>
+    </div>`;
+  }
+
+  // Mentor open_4 — що змінити в онбордингу
+  const mentorOpen4 = mentorRow ? getVal(mentorRow, 'open_4') : null;
+  if (mentorOpen4) {
+    html += `<div class="open-block">
+      <div class="open-role" style="color:var(--amber)">Ментор</div>
+      <div class="open-q">Що змінити в онбордингу для наступних?</div>
+      <div class="open-a">${mentorOpen4}</div>
+    </div>`;
+  }
+
+  // Peer відкриті
+  data.peers.forEach((row, idx) => {
+    const pLabel = data.peers.length > 1 ? `Peer ${idx+1}` : 'Peer';
+    ['open_1','open_2'].forEach((k, i) => {
+      const val = getVal(row, k);
+      if (!val || !val.trim()) return;
+      html += `<div class="open-block">
+        <div class="open-role" style="color:var(--teal)">${pLabel}</div>
+        <div class="open-q">${OPEN_QUESTIONS.peer[i]}</div>
+        <div class="open-a">${val}</div>
+      </div>`;
     });
   });
 
@@ -549,96 +630,8 @@ function renderReport(name, role, data, cols, getVal) {
       </div>`;
   }
 
-  // Auto-generated discussion questions
-  const discussionQs = [];
 
-  // Великі розриви між самооцінкою і ментором
-  CRITERIA_12.forEach(c => {
-    const sv = scores.self[c];
-    const mv = scores.mentor[c];
-    if (sv !== null && mv !== null) {
-      const g = sv - mv;
-      if (g >= 1.5) {
-        discussionQs.push({
-          type: 'gap-high',
-          text: `По критерію <strong>${CRITERIA_LABELS[c]}</strong> ти оцінив себе на ${sv} а ментор на ${mv}. Що конкретно ти мав на увазі оцінюючи себе вище? Які ситуації ти враховував?`
-        });
-      } else if (g <= -1.5) {
-        discussionQs.push({
-          type: 'gap-low',
-          text: `По критерію <strong>${CRITERIA_LABELS[c]}</strong> ментор оцінив тебе вище ніж ти сам — ${mv} проти ${sv}. Що заважає тобі бачити цей рівень в собі?`
-        });
-      }
-    }
-  });
-
-  // Ipsative розриви
-  const ipCriteria = Object.keys(IP_LABELS);
-  ipCriteria.forEach(c => {
-    const selfChoice = data.self ? getVal(data.self, `ipsative_${c}`) : null;
-    const mentorChoice = data._getIpsative ? data._getIpsative('mentor', `ipsative_${c}`) : null;
-    if (selfChoice && mentorChoice && selfChoice !== mentorChoice) {
-      const ip = IP_LABELS[c];
-      discussionQs.push({
-        type: 'ipsative',
-        text: `По ситуації <strong>${ip.q}</strong> ти обрав "${ip[selfChoice]}" а ментор бачить "${ip[mentorChoice]}". Як би ти пояснив свій вибір? Чи був це усвідомлений підхід?`
-      });
-    }
-  });
-
-  // Червоні прапорці
-  const flags = data.mentors.length > 0 ? getVal(data.mentors[0], 'redflags') : null;
-  if (flags && flags.trim()) {
-    discussionQs.push({
-      type: 'redflag',
-      text: `Ментор зафіксував червоні прапорці. Що з твого боку можна було зробити інакше щоб уникнути цих ситуацій?`
-    });
-  }
-
-  // Низькі оцінки ментора
-  CRITERIA_12.forEach(c => {
-    const mv = scores.mentor[c];
-    if (mv !== null && mv <= 1.5) {
-      discussionQs.push({
-        type: 'low',
-        text: `Критерій <strong>${CRITERIA_LABELS[c]}</strong> отримав найнижчу оцінку від ментора. Що конкретно заважало? Що б ти зробив інакше?`
-      });
-    }
-  });
-
-  // Завжди додаємо базові питання
-  discussionQs.push({ type: 'base', text: 'Що з цих 3 місяців ти вважаєш своїм найважливішим досягненням — і чому саме це?' });
-  discussionQs.push({ type: 'base', text: 'Що тебе найбільше здивувало в цій роботі — позитивно або негативно?' });
-  discussionQs.push({ type: 'base', text: 'Якби ти починав знову — що б зробив інакше в перший місяць?' });
-
-  if (discussionQs.length > 0) {
-    html += `
-      <div class="section">
-        <div class="section-header">Питання для фінальної розмови</div>
-        <div class="discussion-intro">Питання сформовані автоматично на основі розривів у звіті. Використовуй як відправну точку для розмови.</div>`;
-
-    const typeLabels = {
-      'gap-high': { label: 'Розрив · висока самооцінка', color: 'var(--amber)' },
-      'gap-low': { label: 'Розрив · занижена самооцінка', color: 'var(--blue)' },
-      'ipsative': { label: 'Різниця в підході', color: 'var(--purple)' },
-      'redflag': { label: 'Червоний прапорець', color: 'var(--red)' },
-      'low': { label: 'Зона росту', color: 'var(--red)' },
-      'base': { label: 'Базове питання', color: 'var(--hint)' },
-    };
-
-    discussionQs.forEach(q => {
-      const tl = typeLabels[q.type];
-      html += `
-        <div class="discussion-q">
-          <div class="dq-type" style="color:${tl.color}">${tl.label}</div>
-          <div class="dq-text">${q.text}</div>
-        </div>`;
-    });
-
-    html += `</div>`;
-  }
-
-  const reportEl = document.getElementById('report');
+    const reportEl = document.getElementById('report');
   reportEl.innerHTML = html;
   reportEl.style.display = 'block';
   reportEl.scrollIntoView({ behavior: 'smooth' });
@@ -661,7 +654,10 @@ async function loadAvailable() {
     const cols = json.table.cols.map(c => c.label.trim());
 
     const getVal = (row, colName) => {
-      const idx = cols.findIndex(c => c.trim() === colName.trim());
+      let idx = cols.findIndex(c => c.trim() === colName.trim());
+      if (idx < 0 && colName === 'manager_name') {
+        idx = cols.findIndex(c => c.trim().startsWith('manager_nam'));
+      }
       if (idx < 0) return null;
       const cell = row.c[idx];
       return cell && cell.v !== null ? String(cell.v).trim() : null;
