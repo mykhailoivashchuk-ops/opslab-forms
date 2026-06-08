@@ -724,6 +724,16 @@ function renderReport(name, role, data, cols, getVal) {
   html += '</div>';
   html += '<div class="ctx-field"><div class="ctx-label">Upsells загалом (%)</div>' +
     '<input class="ctx-input" id="ctx_upsells" placeholder="напр. 4%" value="' + (ctxGet('upsells') || '') + '" style="max-width:120px"></div>';
+  html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px">';
+  html += '<div class="ctx-field"><div class="ctx-label">Churn з вини менеджера</div>' +
+    '<select class="ctx-select" id="ctx_churn">' +
+    ['— не вибрано','Не було','Був 1','Був 2+'].map(o => '<option' + (ctxGet('churn') === o ? ' selected' : '') + '>' + o + '</option>').join('') +
+    '</select></div>';
+  html += '<div class="ctx-field"><div class="ctx-label">Клієнти продовжуються</div>' +
+    '<select class="ctx-select" id="ctx_continuation">' +
+    ['— не вибрано','Всі продовжуються','Більшість','Є відтік'].map(o => '<option' + (ctxGet('continuation') === o ? ' selected' : '') + '>' + o + '</option>').join('') +
+    '</select></div>';
+  html += '</div>';
   html += '</div>';
 
   // Autonomy + tools grid
@@ -811,6 +821,12 @@ function renderReport(name, role, data, cols, getVal) {
   const avgLtv = [ctxLtv1, ctxLtv2, ctxLtv3].filter(v => v > 0);
   const avgLtvNum = avgLtv.length ? avgLtv.reduce((a,b)=>a+b,0)/avgLtv.length : 0;
 
+  // Trust scores
+  const mentorTrustNum = data.mentors.length > 0 ? parseFloat(getVal(data.mentors[0], 'trust_score')) || 0 : 0;
+  const peerTrustNum = data.peers.length > 0 ? parseFloat(getVal(data.peers[0], 'trust_score')) || 0 : 0;
+  const avgTrust = [mentorTrustNum, peerTrustNum].filter(v => v > 0);
+  const avgTrustNum = avgTrust.length ? avgTrust.reduce((a,b)=>a+b,0)/avgTrust.length : 0;
+
   // Next grade potential
   const currentRole = (role || '').toLowerCase();
   const isJunior = currentRole.includes('junior');
@@ -820,18 +836,41 @@ function renderReport(name, role, data, cols, getVal) {
   if (isJunior && mentorAvgNum >= 2.5) {
     const readySignals = [];
     const notReadySignals = [];
+
     if (mentorAvgNum >= 3.0) readySignals.push('середня оцінка ' + mentorAvgNum.toFixed(1));
     if (ctxProjects >= 3) readySignals.push(ctxProjects + ' самостійних проєктів');
-    if (avgLtvNum >= 8) readySignals.push('LTV ' + avgLtvNum.toFixed(0) + ' міс');
+    // LTV контекст — під час випробувального LTV не може бути великим
+    // Тому дивимось на churn і продовження а не на абсолютне LTV
+    const ctxChurn = ctx ? getVal(ctx, 'churn') : null;
+    const ctxContinuation = ctx ? getVal(ctx, 'continuation') : null;
+    const onProbation = avgLtvNum > 0 && avgLtvNum <= 5; // скоріш за все ще на випробувальному
+
+    if (onProbation) {
+      // Під час випробувального — дивимось на churn і продовження
+      if (ctxChurn === 'Не було') readySignals.push('немає churn');
+      else if (ctxChurn && ctxChurn !== '— не вибрано' && ctxChurn !== 'Не було') notReadySignals.push('був churn');
+      if (ctxContinuation === 'Всі продовжуються') readySignals.push('всі клієнти продовжуються');
+      else if (ctxContinuation === 'Більшість') readySignals.push('більшість клієнтів продовжуються');
+      else if (ctxContinuation === 'Є відтік') notReadySignals.push('є відтік клієнтів');
+    } else {
+      if (avgLtvNum >= 7) readySignals.push('LTV ' + avgLtvNum.toFixed(0) + ' міс');
+      else if (avgLtvNum >= 5) readySignals.push('LTV ' + avgLtvNum.toFixed(0) + ' міс (в процесі)');
+    }
     if (ctxCaseStudy === 'Так') readySignals.push('є case study');
+    if (avgTrustNum >= 3.5) readySignals.push('тест на довіру ' + avgTrustNum.toFixed(1) + '/4');
+
     if (growthAreas.length >= 3) notReadySignals.push('зони росту: ' + growthAreas.slice(0,2).map(s=>s.label).join(', '));
     if (ctxProjects < 3) notReadySignals.push('менше 3 самостійних проєктів');
-    if (avgLtvNum > 0 && avgLtvNum < 7) notReadySignals.push('LTV < 7 міс');
+    // LTV handled contextually above
 
-    if (readySignals.length >= 3 && notReadySignals.length === 0) {
+    // Strong trust score compensates for some gaps
+    const trustBonus = avgTrustNum >= 4 ? 1 : 0;
+    const effectiveReadyCount = readySignals.length + trustBonus;
+
+    if (effectiveReadyCount >= 4 && notReadySignals.length === 0) {
       nextGradeNote = '🟢 Готовий до переходу на Middle: ' + readySignals.join(', ');
-    } else if (readySignals.length >= 2) {
-      nextGradeNote = '🟡 Є потенціал до Middle. Сигнали: ' + readySignals.join(', ') + (notReadySignals.length ? '. Треба підтягнути: ' + notReadySignals.join(', ') : '');
+    } else if (effectiveReadyCount >= 3 || (effectiveReadyCount >= 2 && notReadySignals.length <= 1)) {
+      nextGradeNote = '🟡 Є потенціал до Middle. Сигнали: ' + readySignals.join(', ') + (notReadySignals.length ? '. Підтягнути: ' + notReadySignals.join(', ') : '');
     } else {
       nextGradeNote = '🔴 Поки рано говорити про Middle. ' + (notReadySignals.length ? 'Фокус на: ' + notReadySignals.join(', ') : 'Продовжуй розвиток на поточному рівні');
     }
@@ -881,6 +920,8 @@ function renderReport(name, role, data, cols, getVal) {
       getVal(ctx,'ai') && getVal(ctx,'ai') !== '— не вибрано' ? 'AI: '+getVal(ctx,'ai') : null,
       getVal(ctx,'context_speed') && getVal(ctx,'context_speed') !== '— не вибрано' ? 'Занурення: '+getVal(ctx,'context_speed') : null,
       getVal(ctx,'business_types') ? 'Бізнеси: '+getVal(ctx,'business_types') : null,
+      getVal(ctx,'churn') && getVal(ctx,'churn') !== '— не вибрано' ? 'Churn: '+getVal(ctx,'churn') : null,
+      getVal(ctx,'continuation') && getVal(ctx,'continuation') !== '— не вибрано' ? 'Продовження: '+getVal(ctx,'continuation') : null,
     ].filter(Boolean);
     html += badges.map(b => '<span style="font-size:11px;padding:3px 9px;border-radius:12px;background:var(--s2);border:1px solid var(--border2);color:var(--muted)">'+b+'</span>').join('');
     html += '</div>';
@@ -952,6 +993,8 @@ async function saveContextData(managerName) {
     business_types: document.getElementById('ctx_business_types')?.value || '',
     context_speed: document.getElementById('ctx_context_speed')?.value || '',
     opslab_contribution: document.getElementById('ctx_opslab_contribution')?.value || '',
+    churn: document.getElementById('ctx_churn')?.value || '',
+    continuation: document.getElementById('ctx_continuation')?.value || '',
   };
 
   try {
