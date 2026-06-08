@@ -175,6 +175,24 @@ html, body { background: var(--bg); color: var(--text); font-family: 'DM Sans', 
 .interp-opslab { background: var(--purple-bg); border: 1px solid var(--purple-b); border-radius: 12px; padding: 14px 16px; }
 /* Comment */
 .comment-intro { font-size: 12px; color: var(--muted); margin-bottom: 10px; line-height: 1.6; }
+/* Development block */
+.dev-transition { background: var(--surface); border: 1px solid var(--border2); border-radius: 12px; padding: 16px 18px; margin-bottom: 12px; }
+.dev-transition-title { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 12px; }
+.dev-criteria { display: flex; flex-direction: column; gap: 6px; }
+.dev-criterion { display: flex; align-items: flex-start; gap: 10px; font-size: 13px; padding: 8px 12px; border-radius: 8px; }
+.dev-criterion.passed { color: var(--green); background: var(--green-bg); }
+.dev-criterion.failed { color: var(--muted); background: var(--s2); }
+.dev-criterion.critical { color: var(--red); background: var(--red-bg); }
+.dev-criterion.no-data { color: var(--hint); background: transparent; }
+.dev-icon { font-family: 'DM Mono', monospace; font-size: 12px; font-weight: 500; flex-shrink: 0; width: 16px; }
+.dev-na { font-size: 10px; color: var(--hint); margin-left: 6px; font-style: italic; }
+.dev-goals-title { font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 500; color: var(--hint); letter-spacing: .06em; text-transform: uppercase; margin: 16px 0 10px; }
+.dev-goal { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; margin-bottom: 8px; }
+.dev-goal-critical { border-color: var(--red-b); background: var(--red-bg); }
+.dev-goal-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.dev-goal-num { font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 500; color: var(--hint); width: 20px; flex-shrink: 0; }
+.dev-goal-source { font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 500; letter-spacing: .04em; text-transform: uppercase; }
+.dev-goal-text { font-size: 13px; color: var(--text); line-height: 1.65; padding-left: 30px; }
 /* Context block */
 .ctx-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
 .ctx-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; }
@@ -946,7 +964,165 @@ function renderReport(name, role, data, cols, getVal) {
     '</div></div>';
   html += '</div>';
 
-  // === COMMENT FIELD ===
+
+  // === GRADE TRANSITION LOGIC (from real grading doc) ===
+  const GRADE_TRANSITIONS = {
+    'junior': {
+      next: 'Middle Fractional OM',
+      thresholds: {
+        ltv_months: 7,
+        ltv_fail: 6,
+        upsells_pct: 3,
+        projects: 3,
+        case_studies: 2,
+      },
+      score_expectation: 3.0,
+      criteria: [
+        { key: 'ltv', label: 'LTV клієнтів > 7 місяців', check: (ctx, avgLtv) => avgLtv >= 7, fail: (ctx, avgLtv) => avgLtv > 0 && avgLtv < 6 },
+        { key: 'upsells', label: 'Upsells ≥ 3% від річного доходу', check: (ctx) => ctx && parseFloat(getVal(ctx,'upsells')) >= 3 },
+        { key: 'projects', label: '3+ самостійних проєкти без менторського супроводу', check: (ctx) => ctx && parseInt(getVal(ctx,'projects')) >= 3 },
+        { key: 'mentoring', label: 'Менторить аналітика самостійно', check: (ctx) => ctx && getVal(ctx,'mentoring') === 'Так' },
+        { key: 'case_study', label: 'Є 2-3 написаних case studies', check: (ctx) => ctx && getVal(ctx,'case_study') === 'Так' },
+        { key: 'no_churn', label: 'Немає churn з вини менеджера', check: (ctx) => ctx && getVal(ctx,'churn') === 'Не було' },
+        { key: 'continuation', label: 'Клієнти продовжуються', check: (ctx) => ctx && ['Всі продовжуються','Більшість'].includes(getVal(ctx,'continuation')) },
+      ]
+    },
+    'middle': {
+      next: 'Senior Fractional OM',
+      thresholds: { ltv_months: 10, upsells_pct: 6 },
+      score_expectation: 3.5,
+      criteria: [
+        { key: 'ltv', label: 'LTV клієнтів > 10 місяців', check: (ctx, avgLtv) => avgLtv >= 10 },
+        { key: 'upsells', label: 'Upsells ≥ 6% від річного доходу', check: (ctx) => ctx && parseFloat(getVal(ctx,'upsells')) >= 6 },
+        { key: 'mentoring_om', label: 'Менторить Junior OM', check: (ctx) => ctx && getVal(ctx,'mentoring') === 'Так' },
+        { key: 'no_churn', label: 'Немає churn з вини менеджера', check: (ctx) => ctx && getVal(ctx,'churn') === 'Не було' },
+      ]
+    },
+    'senior': {
+      next: 'Junior Fractional COO',
+      thresholds: { upsells_pct: 10 },
+      score_expectation: 4.0,
+      criteria: [
+        { key: 'upsells', label: 'Upsells ≥ 10% від річного доходу', check: (ctx) => ctx && parseFloat(getVal(ctx,'upsells')) >= 10 },
+        { key: 'ltv_portfolio', label: 'Відповідає за LTV всього портфелю', check: () => false }, // manual only
+      ]
+    }
+  };
+
+  const gradeLower = (role || '').toLowerCase();
+  const gradeKey = gradeLower.includes('junior') ? 'junior' : gradeLower.includes('middle') ? 'middle' : gradeLower.includes('senior') ? 'senior' : null;
+  const transition = gradeKey ? GRADE_TRANSITIONS[gradeKey] : null;
+
+  // Check each criterion
+  const passedCriteria = [];
+  const failedCriteria = [];
+  const notEnoughData = [];
+
+  if (transition) {
+    transition.criteria.forEach(c => {
+      const result = c.check(ctx, avgLtvNum);
+      const isFail = c.fail ? c.fail(ctx, avgLtvNum) : false;
+      if (result === true) passedCriteria.push(c.label);
+      else if (isFail) failedCriteria.push({ label: c.label, critical: true });
+      else if (result === false && ctx) failedCriteria.push({ label: c.label, critical: false });
+      else notEnoughData.push(c.label);
+    });
+  }
+
+  // Score gaps as development areas with specific descriptions
+  const SCORE_DEVELOPMENT = {
+    'рух_за_планом': { goal: 'Клієнт ніколи не питає статус першим — ти підсвічуєш до того як запитають. Summary в п\'ятницю, план на понеділок — стабільно кожного тижня.' },
+    'управління_очікуваннями': { goal: 'Тримати рамки навіть коли клієнт тисне на зміну пріоритетів. Жодного зсуву без явної домовленості і фіксації в екшн-плані.' },
+    'ескалація_ресурсу': { goal: 'Ескалювати навантаження до того як стає критично — не коли вже горить. Ментор дізнається про ризик від тебе, а не від клієнта.' },
+    'ритм_комунікації': { goal: 'Відповідь протягом 2 годин стабільно. Summary після кожного дзвінку з call-to-action. М\'яч завжди на боці клієнта.' },
+    'валідація_запиту': { goal: 'Перед виконанням будь-якого запиту — задати питання "навіщо" і "що змінюється якщо це зробимо". Пропонувати альтернативу з аргументацією.' },
+    'стійкість_під_тиском': { goal: 'Не давати відповідь одразу під тиском — "я подумаю і повернусь". Залишатись конгруентним: те що відчуваєш і те як проявляєшся співпадають.' },
+    'відповідальність': { goal: 'Перший рефлекс коли щось пішло не так — "що я міг зробити інакше", а не "чому так вийшло". Ескалювати зі своїм аналізом ситуації.' },
+    'робота_з_фідбеком': { goal: 'Фідбек не повторюється двічі. Після отримання фідбеку — конкретна зміна поведінки яка помітна наступного тижня.' },
+    'освоєння_нового': { goal: 'Новий інструмент або підхід — самостійно за 3-5 днів без покрокового супроводу. Приходити з питанням тільки якщо справді застряг.' },
+    'відвертість_у_стосунках': { goal: 'Підсвічувати клієнту незручне до того як це стане проблемою. Будувати простір де можна говорити чесно — не уникати загострень.' },
+    'проактивність': { goal: 'Ініціювати апдейти про стан справ до того як клієнт запитав. Підсвічувати ризики заздалегідь — не реагувати на факти.' },
+    'дія_в_невизначеності': { goal: 'Коли немає готового рецепту — формулювати 2-3 варіанти і приходити з ними на обговорення. "Я не знаю" з варіантами — не "я не знаю" без нічого.' },
+  };
+
+  // Generate 90-day goals
+  const goals90 = [];
+
+  // Goals from score gaps (mentor <= 2)
+  growthAreas.forEach(s => {
+    const dev = SCORE_DEVELOPMENT[s.key];
+    if (dev) goals90.push({ source: 'gap', label: s.label, goal: dev.goal });
+  });
+
+  // Goals from ipsative gaps
+  ipRes.forEach(r => {
+    if (!r.selfB && r.mentorB === true) {
+      const ipsGoals = {
+        'Валідація запиту': 'Практикувати питання "навіщо" і "що змінюється" перед кожним виконанням запиту — не після.',
+        'Стійкість під тиском': 'Тренувати паузу перед відповіддю під тиском. Відповідати на запит а не на емоцію.',
+        'Відповідальність': 'Після кожної ситуації що пішла не так — писати 2-3 речення про свою частину перед тим як ескалювати.',
+        'Відвертість у стосунках': 'Знайти одну незручну річ на поточному проєкті і підсвітити її клієнту протягом місяця.',
+      };
+      if (ipsGoals[r.label]) goals90.push({ source: 'ipsative', label: r.label, goal: ipsGoals[r.label] });
+    }
+  });
+
+  // Goals from grade transition gaps
+  if (transition) {
+    failedCriteria.forEach(f => {
+      const transGoals = {
+        'LTV клієнтів > 7 місяців': 'Фокус на утриманні поточних клієнтів — жодного churn. Щомісячно проводити check-in про задоволеність.',
+        'Upsells ≥ 3% від річного доходу': 'Визначити одного поточного клієнта де є потенціал для розширення і запропонувати конкретний upsell протягом кварталу.',
+        '3+ самостійних проєкти без менторського супроводу': 'Взяти наступний проєкт з мінімальним менторським супроводом — ескалювати тільки в критичних ситуаціях.',
+        'Менторить аналітика самостійно': 'Почати ставити аналітику задачі самостійно — без участі Delivery в постановці і прийманні роботи.',
+        'Є 2-3 написаних case studies': 'Написати 1 case study за цей квартал по завершеному проєкту. Формат — проблема, підхід, результат, що б зробив інакше.',
+        'Немає churn з вини менеджера': 'Проаналізувати ситуацію churn — що конкретно можна було зробити інакше. Зафіксувати для себе як урок.',
+      };
+      if (transGoals[f.label]) goals90.push({ source: 'transition', label: f.label, goal: transGoals[f.label], critical: f.critical });
+    });
+  }
+
+  // Render development + goals block
+  if (transition || growthAreas.length > 0) {
+    html += '<div class="section"><div class="section-header">Розвиток · Зони і цілі на 3 місяці</div>';
+
+    // Grade transition checklist
+    if (transition && (passedCriteria.length + failedCriteria.length + notEnoughData.length > 0)) {
+      html += '<div class="dev-transition"><div class="dev-transition-title">Що потрібно для переходу на ' + transition.next + '</div>';
+      html += '<div class="dev-criteria">';
+      passedCriteria.forEach(l => {
+        html += '<div class="dev-criterion passed"><span class="dev-icon">✓</span>' + l + '</div>';
+      });
+      failedCriteria.forEach(f => {
+        html += '<div class="dev-criterion ' + (f.critical ? 'critical' : 'failed') + '"><span class="dev-icon">' + (f.critical ? '✗' : '○') + '</span>' + f.label + '</div>';
+      });
+      notEnoughData.forEach(l => {
+        html += '<div class="dev-criterion no-data"><span class="dev-icon">—</span>' + l + ' <span class="dev-na">немає даних</span></div>';
+      });
+      html += '</div></div>';
+    }
+
+    // 90-day goals
+    if (goals90.length > 0) {
+      html += '<div class="dev-goals-title">Цілі на наступні 3 місяці</div>';
+      const sourceLabels = { gap: 'Зона росту', ipsative: 'Підхід', transition: 'До переходу' };
+      const sourceColors = { gap: 'var(--amber)', ipsative: 'var(--purple)', transition: 'var(--blue)' };
+      goals90.forEach((g, i) => {
+        html += '<div class="dev-goal' + (g.critical ? ' dev-goal-critical' : '') + '">' +
+          '<div class="dev-goal-header">' +
+          '<span class="dev-goal-num">' + (i+1) + '</span>' +
+          '<span class="dev-goal-source" style="color:' + sourceColors[g.source] + '">' + sourceLabels[g.source] + ' · ' + g.label + '</span>' +
+          '</div>' +
+          '<div class="dev-goal-text">' + g.goal + '</div>' +
+          '</div>';
+      });
+    }
+
+    html += '</div>';
+  }
+
+
+    // === COMMENT FIELD ===
   const mgNameForComment = name;
   html += '<div class="section"><div class="section-header">Коментар після фінальної розмови</div>' +
     '<div class="comment-intro">Заповни після того як обговорили звіт. Відправляється окремо в таблицю.</div>' +
