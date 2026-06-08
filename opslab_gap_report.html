@@ -175,6 +175,20 @@ html, body { background: var(--bg); color: var(--text); font-family: 'DM Sans', 
 .interp-opslab { background: var(--purple-bg); border: 1px solid var(--purple-b); border-radius: 12px; padding: 14px 16px; }
 /* Comment */
 .comment-intro { font-size: 12px; color: var(--muted); margin-bottom: 10px; line-height: 1.6; }
+/* Context block */
+.ctx-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+.ctx-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; }
+.ctx-card-title { font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 500; color: var(--hint); letter-spacing: .06em; text-transform: uppercase; margin-bottom: 12px; }
+.ctx-field { margin-bottom: 10px; }
+.ctx-label { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+.ctx-input { width: 100%; background: var(--s2); border: 1px solid var(--border2); border-radius: 6px; padding: 7px 10px; font-size: 13px; color: var(--text); font-family: 'DM Sans', sans-serif; outline: none; }
+.ctx-input:focus { border-color: var(--blue-b); }
+.ctx-input::placeholder { color: var(--hint); }
+.ctx-select { width: 100%; background: var(--s2); border: 1px solid var(--border2); border-radius: 6px; padding: 7px 10px; font-size: 13px; color: var(--text); font-family: 'DM Sans', sans-serif; outline: none; }
+.ctx-select:focus { border-color: var(--blue-b); }
+.ctx-row { display: grid; grid-template-columns: 1fr 80px; gap: 8px; }
+.ctx-intro { font-size: 12px; color: var(--muted); margin-bottom: 14px; line-height: 1.6; }
+.ctx-saved { font-size: 11px; color: var(--green); margin-top: 6px; display: none; }
 .mentor-comment { width: 100%; background: var(--s2); border: 1px solid var(--border2); border-radius: 8px; padding: 10px 12px; font-size: 13px; color: var(--text); font-family: 'DM Sans', sans-serif; resize: vertical; min-height: 100px; outline: none; line-height: 1.6; margin-bottom: 10px; }
 .mentor-comment:focus { border-color: var(--blue-b); }
 .comment-btn { padding: 9px 20px; background: var(--blue-bg); border: 1px solid var(--blue-b); border-radius: 8px; color: var(--blue); font-size: 13px; font-weight: 500; font-family: 'DM Sans', sans-serif; cursor: pointer; }
@@ -334,12 +348,13 @@ async function loadReport() {
       return;
     }
 
-    const data = { self: null, mentor: null, peer: null, mentors: [], peers: [] };
+    const data = { self: null, mentor: null, peer: null, mentors: [], peers: [], contextData: null };
     managerRows.forEach(row => {
       const role = getVal(row, 'evaluator_role');
       if (role === 'self') data.self = row;
       else if (role === 'mentor') { data.mentors.push(row); data.mentor = row; }
       else if (role === 'peer') { data.peers.push(row); data.peer = row; }
+      else if (role === 'context_data') data.contextData = row;
     });
 
     // Усереднюємо менторів і peer якщо їх кілька
@@ -688,6 +703,87 @@ function renderReport(name, role, data, cols, getVal) {
 
 
 
+  // === CONTEXT DATA BLOCK ===
+  // Load existing context data if available
+  const ctxRow = data.contextData || null;
+  const ctxGet = (field) => ctxRow ? getVal(ctxRow, field) : '';
+
+  html += '<div class="section"><div class="section-header">Контекстні показники · заповнює ментор</div>';
+  html += '<div class="ctx-intro">Ці дані не збираються через форму — заповни вручну після розмови. Зберігаються в таблиці і підтягуються автоматично наступного разу.</div>';
+
+  // Clients + LTV
+  html += '<div class="ctx-card" style="margin-bottom:10px"><div class="ctx-card-title">Клієнти і LTV</div>';
+  html += '<div class="ctx-grid">';
+  for (let i = 1; i <= 3; i++) {
+    html += '<div class="ctx-field"><div class="ctx-label">Клієнт ' + i + '</div>' +
+      '<div class="ctx-row">' +
+      '<input class="ctx-input" id="ctx_client_' + i + '" placeholder="Назва клієнта" value="' + (ctxGet('client_' + i) || '') + '">' +
+      '<input class="ctx-input" id="ctx_ltv_' + i + '" placeholder="LTV міс" value="' + (ctxGet('ltv_' + i) || '') + '">' +
+      '</div></div>';
+  }
+  html += '</div>';
+  html += '<div class="ctx-field"><div class="ctx-label">Upsells загалом (%)</div>' +
+    '<input class="ctx-input" id="ctx_upsells" placeholder="напр. 4%" value="' + (ctxGet('upsells') || '') + '" style="max-width:120px"></div>';
+  html += '</div>';
+
+  // Autonomy + tools grid
+  html += '<div class="ctx-grid">';
+
+  // Autonomy
+  html += '<div class="ctx-card"><div class="ctx-card-title">Самостійність</div>';
+  html += '<div class="ctx-field"><div class="ctx-label">Кількість самостійних проєктів</div>' +
+    '<input class="ctx-input" id="ctx_projects" placeholder="3" value="' + (ctxGet('projects') || '') + '" style="max-width:80px"></div>';
+  html += '<div class="ctx-field"><div class="ctx-label">Підтверджений case study</div>' +
+    '<select class="ctx-select" id="ctx_case_study">' +
+    ['— не вибрано','Так','Ні'].map(o => '<option' + (ctxGet('case_study') === o ? ' selected' : '') + '>' + o + '</option>').join('') +
+    '</select></div>';
+  html += '<div class="ctx-field"><div class="ctx-label">Менторував аналітика</div>' +
+    '<select class="ctx-select" id="ctx_mentoring">' +
+    ['— не вибрано','Так','Ні','Частково'].map(o => '<option' + (ctxGet('mentoring') === o ? ' selected' : '') + '>' + o + '</option>').join('') +
+    '</select></div>';
+  html += '</div>';
+
+  // Tools
+  html += '<div class="ctx-card"><div class="ctx-card-title">Інструменти</div>';
+  [
+    { id: 'ctx_notion', label: 'Notion' },
+    { id: 'ctx_clickup', label: 'ClickUp' },
+    { id: 'ctx_sheets', label: 'Google Sheets' },
+  ].forEach(({id, label}) => {
+    html += '<div class="ctx-field"><div class="ctx-label">' + label + '</div>' +
+      '<select class="ctx-select" id="' + id + '">' +
+      ['— не вибрано','Базово','Впевнено','Експертно'].map(o => '<option' + (ctxGet(id.replace('ctx_','')) === o ? ' selected' : '') + '>' + o + '</option>').join('') +
+      '</select></div>';
+  });
+  html += '<div class="ctx-field"><div class="ctx-label">AI-інструменти</div>' +
+    '<select class="ctx-select" id="ctx_ai">' +
+    ['— не вибрано','Не використовує','Базово','Впроваджує в команду'].map(o => '<option' + (ctxGet('ai') === o ? ' selected' : '') + '>' + o + '</option>').join('') +
+    '</select></div>';
+  html += '</div>';
+
+  html += '</div>'; // ctx-grid
+
+  // Business context + OpsLab
+  html += '<div class="ctx-grid">';
+  html += '<div class="ctx-card"><div class="ctx-card-title">Бізнес-контекст</div>';
+  html += '<div class="ctx-field"><div class="ctx-label">Типи бізнесів (через кому)</div>' +
+    '<input class="ctx-input" id="ctx_business_types" placeholder="ритейл, ІТ-сервіси, виробництво" value="' + (ctxGet('business_types') || '') + '"></div>';
+  html += '<div class="ctx-field"><div class="ctx-label">Швидкість занурення в новий контекст</div>' +
+    '<select class="ctx-select" id="ctx_context_speed">' +
+    ['— не вибрано','Повільно','Нормально','Швидко'].map(o => '<option' + (ctxGet('context_speed') === o ? ' selected' : '') + '>' + o + '</option>').join('') +
+    '</select></div>';
+  html += '</div>';
+
+  html += '<div class="ctx-card"><div class="ctx-card-title">Внесок у OpsLab</div>';
+  html += '<div class="ctx-field"><div class="ctx-label">Опис внеску</div>' +
+    '<textarea class="ctx-input" id="ctx_opslab_contribution" placeholder="Коротко що зробив для команди чи продукту..." style="min-height:80px;resize:vertical">' + (ctxGet('opslab_contribution') || '') + '</textarea></div>';
+  html += '</div>';
+  html += '</div>'; // ctx-grid
+
+  html += '<button class="comment-btn" onclick="saveContextData(\'' + name + '\')">Зберегти контекстні дані</button>';
+  html += '<div id="ctx-status" style="font-size:12px;margin-top:8px;"></div>';
+  html += '</div>';
+
   // === INTERPRETATION BLOCK ===
   const allScores = CRITERIA_12.map(c => ({
     label: CRITERIA_LABELS[c], key: c,
@@ -703,6 +799,43 @@ function renderReport(name, role, data, cols, getVal) {
 
   const validScores = allScores.filter(s => s.mentor !== null);
   const mentorAvgNum = validScores.length ? validScores.reduce((a,b)=>a+b.mentor,0)/validScores.length : 0;
+
+  // Context data for grade assessment
+  const ctx = data.contextData;
+  const ctxProjects = ctx ? parseInt(getVal(ctx, 'projects')) || 0 : 0;
+  const ctxCaseStudy = ctx ? getVal(ctx, 'case_study') : null;
+  const ctxUpsells = ctx ? parseFloat(getVal(ctx, 'upsells')) || 0 : 0;
+  const ctxLtv1 = ctx ? parseFloat(getVal(ctx, 'ltv_1')) || 0 : 0;
+  const ctxLtv2 = ctx ? parseFloat(getVal(ctx, 'ltv_2')) || 0 : 0;
+  const ctxLtv3 = ctx ? parseFloat(getVal(ctx, 'ltv_3')) || 0 : 0;
+  const avgLtv = [ctxLtv1, ctxLtv2, ctxLtv3].filter(v => v > 0);
+  const avgLtvNum = avgLtv.length ? avgLtv.reduce((a,b)=>a+b,0)/avgLtv.length : 0;
+
+  // Next grade potential
+  const currentRole = (role || '').toLowerCase();
+  const isJunior = currentRole.includes('junior');
+  const isMiddle = currentRole.includes('middle');
+
+  let nextGradeNote = '';
+  if (isJunior && mentorAvgNum >= 2.5) {
+    const readySignals = [];
+    const notReadySignals = [];
+    if (mentorAvgNum >= 3.0) readySignals.push('середня оцінка ' + mentorAvgNum.toFixed(1));
+    if (ctxProjects >= 3) readySignals.push(ctxProjects + ' самостійних проєктів');
+    if (avgLtvNum >= 8) readySignals.push('LTV ' + avgLtvNum.toFixed(0) + ' міс');
+    if (ctxCaseStudy === 'Так') readySignals.push('є case study');
+    if (growthAreas.length >= 3) notReadySignals.push('зони росту: ' + growthAreas.slice(0,2).map(s=>s.label).join(', '));
+    if (ctxProjects < 3) notReadySignals.push('менше 3 самостійних проєктів');
+    if (avgLtvNum > 0 && avgLtvNum < 7) notReadySignals.push('LTV < 7 міс');
+
+    if (readySignals.length >= 3 && notReadySignals.length === 0) {
+      nextGradeNote = '🟢 Готовий до переходу на Middle: ' + readySignals.join(', ');
+    } else if (readySignals.length >= 2) {
+      nextGradeNote = '🟡 Є потенціал до Middle. Сигнали: ' + readySignals.join(', ') + (notReadySignals.length ? '. Треба підтягнути: ' + notReadySignals.join(', ') : '');
+    } else {
+      nextGradeNote = '🔴 Поки рано говорити про Middle. ' + (notReadySignals.length ? 'Фокус на: ' + notReadySignals.join(', ') : 'Продовжуй розвиток на поточному рівні');
+    }
+  }
 
   let gradeText, gradeColor;
   if (mentorAvgNum >= 3.5) { gradeText = 'Грейд підтверджено з запасом'; gradeColor = 'var(--green)'; }
@@ -725,7 +858,36 @@ function renderReport(name, role, data, cols, getVal) {
     '<div class="interp-grade-label" style="color:'+gradeColor+'">'+(role||'Middle Fractional OM')+' · Грейд</div>' +
     '<div class="interp-grade-text">'+gradeText+'</div>' +
     '<div class="interp-grade-avg">Середня оцінка ментора: <strong>'+mentorAvgNum.toFixed(1)+'</strong> / 4</div>' +
+    (nextGradeNote ? '<div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.08);font-size:13px;color:var(--text)">'+nextGradeNote+'</div>' : '') +
     '</div>';
+
+  if (ctx) {
+    html += '<div class="ctx-card" style="margin-bottom:14px"><div class="ctx-card-title">Контекстні показники</div>';
+    html += '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:10px">';
+    const clientsHtml = [1,2,3].map(i => {
+      const c = getVal(ctx,'client_'+i); const l = getVal(ctx,'ltv_'+i);
+      return c ? '<div><div style="font-size:11px;color:var(--muted)">Клієнт '+i+'</div><div style="font-size:13px;color:var(--text)">'+c+(l?' · '+l+' міс':'')+'</div></div>' : '';
+    }).filter(Boolean).join('');
+    html += clientsHtml + '</div>';
+    html += '<div style="display:flex;flex-wrap:wrap;gap:8px">';
+    const badges = [
+      getVal(ctx,'projects') ? getVal(ctx,'projects')+' проєктів' : null,
+      getVal(ctx,'upsells') ? 'Upsells '+getVal(ctx,'upsells') : null,
+      getVal(ctx,'case_study') && getVal(ctx,'case_study') !== '— не вибрано' ? 'Case study: '+getVal(ctx,'case_study') : null,
+      getVal(ctx,'mentoring') && getVal(ctx,'mentoring') !== '— не вибрано' ? 'Менторство: '+getVal(ctx,'mentoring') : null,
+      getVal(ctx,'notion') && getVal(ctx,'notion') !== '— не вибрано' ? 'Notion: '+getVal(ctx,'notion') : null,
+      getVal(ctx,'clickup') && getVal(ctx,'clickup') !== '— не вибрано' ? 'ClickUp: '+getVal(ctx,'clickup') : null,
+      getVal(ctx,'sheets') && getVal(ctx,'sheets') !== '— не вибрано' ? 'Sheets: '+getVal(ctx,'sheets') : null,
+      getVal(ctx,'ai') && getVal(ctx,'ai') !== '— не вибрано' ? 'AI: '+getVal(ctx,'ai') : null,
+      getVal(ctx,'context_speed') && getVal(ctx,'context_speed') !== '— не вибрано' ? 'Занурення: '+getVal(ctx,'context_speed') : null,
+      getVal(ctx,'business_types') ? 'Бізнеси: '+getVal(ctx,'business_types') : null,
+    ].filter(Boolean);
+    html += badges.map(b => '<span style="font-size:11px;padding:3px 9px;border-radius:12px;background:var(--s2);border:1px solid var(--border2);color:var(--muted)">'+b+'</span>').join('');
+    html += '</div>';
+    const contrib = getVal(ctx,'opslab_contribution');
+    if (contrib) html += '<div style="margin-top:10px;font-size:12px;color:var(--muted)"><span style="color:var(--purple);font-family:DM Mono,monospace;font-size:9px;text-transform:uppercase;letter-spacing:.06em;margin-right:6px">Внесок в OpsLab</span>'+contrib+'</div>';
+    html += '</div>';
+  }
 
   html += '<div class="interp-grid">';
   if (strengths.length) html += '<div class="interp-card"><div class="interp-card-title" style="color:var(--green)">Сильні сторони · ментор ≥ 3.5</div>' + strengths.map(s=>itemHtml(s.label,'var(--green)')).join('') + '</div>';
@@ -761,6 +923,51 @@ function renderReport(name, role, data, cols, getVal) {
 
 function setStatus(msg) {
   document.getElementById('search-status').textContent = msg;
+}
+
+async function saveContextData(managerName) {
+  const btn = event.target;
+  btn.disabled = true;
+  btn.textContent = 'Зберігаємо...';
+
+  const payload = {
+    timestamp: new Date().toISOString(),
+    evaluator_role: 'context_data',
+    evaluator_name: 'Ментор',
+    manager_name: managerName,
+    client_1: document.getElementById('ctx_client_1')?.value || '',
+    ltv_1: document.getElementById('ctx_ltv_1')?.value || '',
+    client_2: document.getElementById('ctx_client_2')?.value || '',
+    ltv_2: document.getElementById('ctx_ltv_2')?.value || '',
+    client_3: document.getElementById('ctx_client_3')?.value || '',
+    ltv_3: document.getElementById('ctx_ltv_3')?.value || '',
+    upsells: document.getElementById('ctx_upsells')?.value || '',
+    projects: document.getElementById('ctx_projects')?.value || '',
+    case_study: document.getElementById('ctx_case_study')?.value || '',
+    mentoring: document.getElementById('ctx_mentoring')?.value || '',
+    notion: document.getElementById('ctx_notion')?.value || '',
+    clickup: document.getElementById('ctx_clickup')?.value || '',
+    sheets: document.getElementById('ctx_sheets')?.value || '',
+    ai: document.getElementById('ctx_ai')?.value || '',
+    business_types: document.getElementById('ctx_business_types')?.value || '',
+    context_speed: document.getElementById('ctx_context_speed')?.value || '',
+    opslab_contribution: document.getElementById('ctx_opslab_contribution')?.value || '',
+  };
+
+  try {
+    await fetch('https://hooks.zapier.com/hooks/catch/14002247/4bh0i7c/', {
+      method: 'POST', mode: 'no-cors', body: JSON.stringify(payload)
+    });
+    const st = document.getElementById('ctx-status');
+    st.textContent = '✓ Збережено — наступного разу підтягнеться автоматично';
+    st.style.color = 'var(--green)';
+    btn.textContent = 'Зберегти контекстні дані';
+    btn.disabled = false;
+  } catch(e) {
+    document.getElementById('ctx-status').textContent = 'Помилка. Спробуй ще раз.';
+    btn.disabled = false;
+    btn.textContent = 'Зберегти контекстні дані';
+  }
 }
 
 async function submitComment(managerName) {
