@@ -1089,9 +1089,32 @@ function renderReport(name, role, data, cols, getVal) {
   if (typeof ipRes !== 'undefined') {
     ipRes.forEach(r => { if (r.selfB === false && pdpFocus.length < 5) pdpFocus.push({ area: r.label + ' (OpsLab-підхід)', why: 'в ipsative обрано альтернативу, не OpsLab-логіку', how: 'Відпрацювати підхід на реальних кейсах з ментором, поки не стане рефлексом.' }); });
   }
+
+  // Fallback: якщо явних просідань немає — беремо відносно найслабші осі (нижче середньої людини)
+  if (pdpFocus.length === 0) {
+    const scored = allScores.filter(s => s.mentor !== null);
+    if (scored.length) {
+      const personAvg = scored.reduce((a,b)=>a+b.mentor,0)/scored.length;
+      const relWeak = scored.filter(s => s.mentor < personAvg).sort((a,b)=>a.mentor-b.mentor).slice(0,2);
+      const pool = relWeak.length ? relWeak : scored.sort((a,b)=>a.mentor-b.mentor).slice(0,2);
+      pool.forEach(s => pdpFocus.push({ area: s.label + ' (край росту)', why: 'найслабша серед сильних — тут найбільше запасу для наступного рівня', how: PDP_HOW[s.key] || null }));
+    }
+  }
+  // Завжди додаємо погляд вперед: найближчі критерії воріт, яких ще бракує (рахуємо локально)
+  if (pdpFocus.length < 5) {
+    const fwd = [];
+    const up = ctx ? parseFloat(getVal(ctx,'upsells')) : NaN;
+    if (!isNaN(up) && up < 6) fwd.push({ area: 'До Senior: Upsells ≥ 6%', why: 'зараз '+up+'% — критерій наступних воріт', how: 'Знайти в поточних клієнтах потенціал розширення і запропонувати upsell з аргументацією.' });
+    if (ctx && getVal(ctx,'case_study') !== 'Так') fwd.push({ area: 'До Senior: 2 case studies на клієнта', why: 'критерій воріт ще не закритий', how: 'Написати по 2 кейси на клієнта, що розкривають різні аспекти роботи.' });
+    if (ctx && getVal(ctx,'mentoring') !== 'Так') fwd.push({ area: 'До Senior: менторство молодшого', why: 'критерій воріт ще не закритий', how: 'Взяти молодшого менеджера під менторство на проєкті.' });
+    fwd.slice(0, 5 - pdpFocus.length).forEach(f => pdpFocus.push(f));
+  }
+
   if (pdpFocus.length) {
     html += '<div class="pdp-box"><div class="pdp-title">На що звернути увагу при формуванні PDP / плану росту</div>';
-    html += '<div class="pdp-lede">Пріоритети від найглибших просідань до сліпих зон самосприйняття. Основа для розмови, не автоматичний вердикт.</div>';
+    const lede = dips.length ? 'Пріоритети від найглибших просідань до сліпих зон самосприйняття. Основа для розмови, не автоматичний вердикт.'
+                             : 'Явних просідань немає — нижче краї росту й погляд на найближчі ворота. Основа для розмови, не автоматичний вердикт.';
+    html += '<div class="pdp-lede">'+lede+'</div>';
     pdpFocus.slice(0,5).forEach((f,i) => { html += '<div class="pdp-item"><span class="pdp-num">'+(i+1)+'</span><div><strong>'+f.area+'</strong> — <span class="why">'+f.why+'</span>'+(f.how?'<br>'+f.how:'')+'</div></div>'; });
     html += '</div>';
   }
