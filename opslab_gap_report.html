@@ -67,8 +67,11 @@ html, body { background: var(--bg); color: var(--text); font-family: 'DM Sans', 
 
 /* Summary cards */
 .summary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 32px; }
-.summary-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; }
+.summary-card { background: var(--surface); border: 1px solid var(--border2); border-radius: 12px; padding: 16px 18px; border-top: 3px solid var(--border2); }
 .summary-card.empty { opacity: 0.4; }
+.summary-card.self-c { border-top-color: var(--green); background: linear-gradient(var(--green-bg), transparent 60%), var(--surface); }
+.summary-card.mentor-c { border-top-color: var(--amber); background: linear-gradient(var(--amber-bg), transparent 60%), var(--surface); }
+.summary-card.peer-c { border-top-color: var(--teal); background: linear-gradient(var(--teal-bg), transparent 60%), var(--surface); }
 .sc-role { font-family: 'DM Mono', monospace; font-size: 9px; font-weight: 500; letter-spacing: .06em; text-transform: uppercase; margin-bottom: 8px; }
 .sc-role.self { color: var(--green); }
 .sc-role.mentor { color: var(--amber); }
@@ -82,14 +85,16 @@ html, body { background: var(--bg); color: var(--text); font-family: 'DM Sans', 
 
 /* Gap bars */
 .criteria-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.block-header { grid-column: 1 / -1; font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--accent, var(--amber)); margin: 14px 0 2px; padding-top: 8px; border-top: 1px solid var(--border); }
-.criterion-row { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px; }
+.block-header { grid-column: 1 / -1; font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--accent); margin: 20px 0 4px; display: flex; align-items: center; gap: 10px; }
+.block-header:before { content: ""; width: 22px; height: 3px; border-radius: 2px; background: var(--accent); }
+.block-header:after { content: ""; flex: 1; height: 1px; background: var(--border); }
+.criterion-row { background: var(--surface); border: 1px solid var(--border2); border-radius: 12px; padding: 16px 18px; }
 .cr-label { font-size: 15px; font-weight: 500; color: var(--text); margin-bottom: 5px; }
 .bars { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
 .bar-row { display: flex; align-items: center; gap: 12px; }
 .bar-role { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); width: 80px; flex-shrink: 0; }
-.bar-track { flex: 1; height: 10px; background: var(--s2); border-radius: 5px; overflow: hidden; }
-.bar-fill { height: 100%; border-radius: 5px; transition: width .7s cubic-bezier(.4,0,.2,1); }
+.bar-track { flex: 1; height: 14px; background: rgba(26,26,26,0.05); border-radius: 7px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 7px; transition: width .7s cubic-bezier(.4,0,.2,1); min-width: 3px; }
 .bar-fill.self { background: var(--green); }
 .bar-fill.mentor { background: var(--amber); }
 .bar-fill.peer { background: var(--teal); }
@@ -100,19 +105,27 @@ html, body { background: var(--bg); color: var(--text); font-family: 'DM Sans', 
 .gap-crit { background: var(--red-bg); color: var(--red); border: 1px solid var(--red-b); }
 
 /* Ipsative */
-.ip-block { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 18px; margin-bottom: 10px; }
-.ip-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; margin-bottom: 14px; }
-.ip-criterion { font-size: 15px; font-weight: 500; color: var(--text); }
-.ip-choices { display: flex; gap: 8px; flex-shrink: 0; }
-.ip-choice-pill { display: flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 500; border: 1px solid var(--border2); }
-.ip-choice-pill.opslab { background: var(--green-bg); color: var(--green); border-color: var(--green-b); }
-.ip-choice-pill.alt { background: var(--amber-bg); color: var(--amber); border-color: var(--amber-b); }
-.ip-choice-pill.match { background: var(--blue-bg); color: var(--blue); border-color: var(--blue-b); }
-.ip-pill-role { font-family: 'DM Mono', monospace; font-size: 9px; opacity: 0.7; }
-.ip-example { background: var(--s2); border-radius: 8px; padding: 12px 14px; }
-.ip-example-label { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--hint); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 6px; }
-.ip-example-self { font-size: 13px; color: var(--text); line-height: 1.6; margin-bottom: 8px; }
-.ip-example-mentor { font-size: 13px; color: var(--muted); line-height: 1.6; border-top: 1px solid var(--border); padding-top: 8px; }
+.ip-block { background: var(--surface); border: 1px solid var(--border2); border-radius: 12px; padding: 0; margin-bottom: 10px; overflow: hidden; border-left: 3px solid var(--border2); }
+.ip-block.is-match { border-left-color: var(--green); }
+.ip-block.is-diff { border-left-color: var(--amber); }
+.ip-top { padding: 14px 18px; }
+.ip-criterion { font-size: 15px; font-weight: 500; color: var(--text); margin-bottom: 12px; }
+.ip-compare { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.ip-side { border-radius: 8px; padding: 10px 12px; border: 1px solid var(--border); background: var(--s2); }
+.ip-side-role { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: .05em; text-transform: uppercase; color: var(--hint); margin-bottom: 5px; }
+.ip-side-choice { font-size: 12.5px; line-height: 1.45; color: var(--text); }
+.ip-side-tag { display: inline-block; font-family: 'DM Mono', monospace; font-size: 9px; font-weight: 500; padding: 1px 6px; border-radius: 4px; margin-bottom: 6px; }
+.ip-side.opslab { border-color: var(--green-b); background: var(--green-bg); }
+.ip-side.opslab .ip-side-tag { background: var(--green); color: #fff; }
+.ip-side.alt { border-color: var(--amber-b); background: var(--amber-bg); }
+.ip-side.alt .ip-side-tag { background: var(--amber); color: #fff; }
+.ip-verdict { font-size: 11px; font-family: 'DM Mono', monospace; letter-spacing: .04em; text-transform: uppercase; margin-top: 12px; display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 6px; }
+.ip-verdict.match { background: var(--green-bg); color: var(--green); }
+.ip-verdict.diff { background: var(--amber-bg); color: var(--amber); }
+.ip-example { border-top: 1px solid var(--border); background: rgba(26,26,26,0.015); padding: 12px 18px; }
+.ip-example-label { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--hint); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 8px; }
+.ip-example-self { font-size: 12.5px; color: var(--text); line-height: 1.55; margin-bottom: 8px; }
+.ip-example-mentor { font-size: 12.5px; color: var(--muted); line-height: 1.55; }
 .ip-role-tag { font-family: 'DM Mono', monospace; font-size: 9px; font-weight: 500; text-transform: uppercase; letter-spacing: .04em; margin-right: 6px; }
 
 /* Trust */
@@ -175,6 +188,26 @@ html, body { background: var(--bg); color: var(--text); font-family: 'DM Sans', 
 .interp-item { display: flex; align-items: flex-start; gap: 8px; font-size: 12px; color: var(--muted); margin-bottom: 5px; line-height: 1.4; }
 .interp-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
 .interp-opslab { background: var(--purple-bg); border: 1px solid var(--purple-b); border-radius: 12px; padding: 14px 16px; }
+.verdict-box { border-radius: 14px; padding: 20px 22px; margin-bottom: 16px; border: 1px solid var(--border2); background: var(--surface); border-left: 4px solid var(--accent); }
+.verdict-headline { font-size: 18px; font-weight: 500; color: var(--text); line-height: 1.4; margin-bottom: 4px; }
+.verdict-avg { font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+.verdict-avg strong { color: var(--text); }
+.verdict-sub { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: .05em; text-transform: uppercase; color: var(--hint); margin: 14px 0 8px; }
+.dip-row { display: flex; align-items: baseline; gap: 12px; padding: 8px 12px; border-radius: 8px; background: var(--amber-bg); border: 1px solid var(--amber-b); margin-bottom: 6px; flex-wrap: wrap; }
+.dip-name { font-size: 13px; font-weight: 500; color: var(--text); flex-shrink: 0; min-width: 180px; }
+.dip-scores { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--amber); flex-shrink: 0; }
+.dip-eg { font-size: 12px; color: var(--muted); line-height: 1.5; flex: 1; min-width: 200px; }
+.strong-row { display: flex; align-items: baseline; gap: 12px; padding: 6px 12px; border-radius: 8px; background: var(--green-bg); border: 1px solid var(--green-b); margin-bottom: 6px; }
+.strong-name { font-size: 13px; font-weight: 500; color: var(--text); flex-shrink: 0; min-width: 180px; }
+.strong-scores { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--green); }
+.pdp-box { border: 1px solid var(--blue-b); background: var(--blue-bg); border-radius: 14px; padding: 18px 20px; margin-bottom: 16px; }
+.pdp-title { font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--blue); margin-bottom: 4px; }
+.pdp-lede { font-size: 12px; color: var(--muted); margin-bottom: 12px; line-height: 1.5; }
+.pdp-item { display: flex; gap: 10px; padding: 8px 0; border-bottom: 1px solid rgba(26,26,26,0.05); font-size: 13px; line-height: 1.55; color: var(--text); }
+.pdp-item:last-child { border-bottom: none; }
+.pdp-num { flex-shrink: 0; width: 20px; height: 20px; border-radius: 50%; background: var(--blue); color: #fff; font-family: 'DM Mono', monospace; font-size: 11px; display: flex; align-items: center; justify-content: center; margin-top: 1px; }
+.pdp-item strong { font-weight: 500; }
+.pdp-item .why { color: var(--muted); font-size: 12px; }
 /* Comment */
 .comment-intro { font-size: 12px; color: var(--muted); margin-bottom: 10px; line-height: 1.6; }
 /* Development block */
@@ -543,17 +576,17 @@ function renderReport(name, role, data, cols, getVal) {
     </div>
 
     <div class="summary-grid">
-      <div class="summary-card ${!data.self ? 'empty' : ''}">
+      <div class="summary-card self-c ${!data.self ? 'empty' : ''}">
         <div class="sc-role self">Самооцінка</div>
         <div class="sc-avg">${avg('self') || '—'}</div>
         <div class="sc-label">${data.self ? 'середнє з 4' : 'не заповнено'}</div>
       </div>
-      <div class="summary-card ${data.mentors.length === 0 ? 'empty' : ''}">
+      <div class="summary-card mentor-c ${data.mentors.length === 0 ? 'empty' : ''}">
         <div class="sc-role mentor">${mentorLabel}</div>
         <div class="sc-avg">${avg('mentor') || '—'}</div>
         <div class="sc-label">${data.mentors.length > 0 ? 'середнє з 4' : 'не заповнено'}</div>
       </div>
-      <div class="summary-card ${data.peers.length === 0 ? 'empty' : ''}">
+      <div class="summary-card peer-c ${data.peers.length === 0 ? 'empty' : ''}">
         <div class="sc-role peer">${peerLabel}</div>
         <div class="sc-avg">${avg('peer') || '—'}</div>
         <div class="sc-label">${data.peers.length > 0 ? 'середнє з 4' : 'не заповнено'}</div>
@@ -662,24 +695,31 @@ function renderReport(name, role, data, cols, getVal) {
       return choice === 'B' ? 'opslab' : 'alt';
     };
 
-    const selfPill = selfChoice ? '<div class="ip-choice-pill ' + pillClass(selfChoice) + '"><span class="ip-pill-role">Я</span>' + ip[selfChoice] + '</div>' : '';
-    const mentorPill = mentorChoice ? '<div class="ip-choice-pill ' + pillClass(mentorChoice) + '"><span class="ip-pill-role">Ментор</span>' + ip[mentorChoice] + '</div>' : '';
     const selfEx = selfExample ? '<div class="ip-example-self"><span class="ip-role-tag" style="color:var(--green)">Я</span>' + selfExample + '</div>' : '';
     const mentorEx = mentorExample ? '<div class="ip-example-mentor"><span class="ip-role-tag" style="color:var(--amber)">Ментор</span>' + mentorExample + '</div>' : '';
     const exampleBlock = (selfExample || mentorExample) ? '<div class="ip-example"><div class="ip-example-label">' + IP_EXAMPLE_LABELS_MAP[c] + '</div>' + selfEx + mentorEx + '</div>' : '';
 
-    const variantsBlock = '<div class="ip-variants">' +
-      '<div class="ip-variant ' + (selfChoice === 'A' || mentorChoice === 'A' ? 'highlighted-a' : '') + '"><span class="ip-v-label">А</span>' + ip.A + '</div>' +
-      '<div class="ip-variant ' + (selfChoice === 'B' || mentorChoice === 'B' ? 'highlighted-b' : '') + '"><span class="ip-v-label">Б</span>' + ip.B + '</div>' +
-      '</div>';
-    const opsNote = '<div class="ip-opslab-note">' + ip.opslab_note + '</div>';
-    const selfQ = '<div class="ip-q-label" style="color:var(--green)">Я: ' + ip.question_self + '</div>';
-    const mentorQ = '<div class="ip-q-label" style="color:var(--amber)">Ментор: ' + ip.question_mentor + '</div>';
+    const sideHtml = (roleLabel, choice) => {
+      if (!choice) return '<div class="ip-side"><div class="ip-side-role">' + roleLabel + '</div><div class="ip-side-choice" style="color:var(--hint)">— не заповнено</div></div>';
+      const isOps = choice === 'B';
+      return '<div class="ip-side ' + (isOps ? 'opslab' : 'alt') + '">' +
+        '<div class="ip-side-role">' + roleLabel + '</div>' +
+        '<span class="ip-side-tag">' + (isOps ? 'OpsLab-підхід' : 'Альтернатива') + '</span>' +
+        '<div class="ip-side-choice">' + ip[choice] + '</div></div>';
+    };
+    const compareBlock = '<div class="ip-compare">' + sideHtml('Я', selfChoice) + sideHtml('Ментор', mentorChoice) + '</div>';
+    const verdict = (selfChoice && mentorChoice)
+      ? (choicesMatch
+          ? '<div class="ip-verdict match">● збіг — бачать однаково</div>'
+          : '<div class="ip-verdict diff">● різне бачення — обговорити</div>')
+      : '';
+    const blockClass = (selfChoice && mentorChoice) ? (choicesMatch ? 'is-match' : 'is-diff') : '';
 
-    html += '<div class="ip-block">' +
-      '<div class="ip-header"><div class="ip-criterion">' + ip.q + '</div><div class="ip-choices">' + selfPill + mentorPill + '</div></div>' +
-      selfQ + mentorQ +
-      variantsBlock + opsNote +
+    html += '<div class="ip-block ' + blockClass + '">' +
+      '<div class="ip-top">' +
+      '<div class="ip-criterion">' + ip.q + '</div>' +
+      compareBlock + verdict +
+      '</div>' +
       exampleBlock + '</div>';
   });
 
@@ -988,12 +1028,73 @@ function renderReport(name, role, data, cols, getVal) {
   const itemHtml = (s, color) => '<div class="interp-item"><span class="interp-dot" style="background:'+color+'"></span>'+s+'</div>';
 
   html += '<div class="section"><div class="section-header">Інтерпретація · Загальний висновок</div>';
-  html += '<div class="interp-grade" style="border-color:'+gradeColor+';background:'+gradeColor+'22">' +
-    '<div class="interp-grade-label" style="color:'+gradeColor+'">'+(role||'Middle Fractional OM')+' · Грейд</div>' +
-    '<div class="interp-grade-text">'+gradeText+'</div>' +
-    '<div class="interp-grade-avg">Середня оцінка ментора: <strong>'+mentorAvgNum.toFixed(1)+'</strong> / 4</div>' +
-    (nextGradeNote ? '<div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.08);font-size:13px;color:var(--text)">'+nextGradeNote+'</div>' : '') +
-    '</div>';
+  // Змістовний вердикт: підтверджується / просідає + приклади + PDP
+  const dips = allScores.filter(s => s.mentor !== null && s.mentor <= 2.5).sort((a,b) => a.mentor - b.mentor);
+  const topStrengths = allScores.filter(s => s.mentor >= 3.5).sort((a,b) => b.mentor - a.mentor).slice(0,4);
+
+  let headline, hlColor;
+  if (mentorAvgNum >= 3.5 && dips.length === 0) { headline = 'Middle-профіль підтверджено з запасом'; hlColor = 'var(--green)'; }
+  else if (mentorAvgNum >= 2.8 && dips.length <= 2) { headline = 'Middle-профіль підтверджується' + (dips.length ? ', але просідає в окремих осях' : ''); hlColor = 'var(--green)'; }
+  else if (mentorAvgNum >= 2.8) { headline = 'Middle-профіль підтверджується, але з кількома системними просіданнями'; hlColor = 'var(--amber)'; }
+  else if (mentorAvgNum >= 2.2) { headline = 'Middle-профіль під питанням — просідає в ключових осях'; hlColor = 'var(--amber)'; }
+  else { headline = 'Поки не дотягує до входу в Middle — радше Junior-профіль (виняток)'; hlColor = 'var(--red)'; }
+
+  html += '<div class="verdict-box" style="border-left-color:'+hlColor+'">';
+  html += '<div class="verdict-headline">'+headline+'</div>';
+  html += '<div class="verdict-avg">Середня ментора <strong>'+mentorAvgNum.toFixed(1)+'</strong>/4 · самооцінка <strong>'+(avg('self')||'—')+'</strong> · peer <strong>'+(avg('peer')||'—')+'</strong></div>';
+  if (topStrengths.length) {
+    html += '<div class="verdict-sub" style="color:var(--green)">Тримає впевнено</div>';
+    topStrengths.forEach(s => { html += '<div class="strong-row"><span class="strong-name">'+s.label+'</span><span class="strong-scores">ментор '+s.mentor+(s.self!==null?' · я '+s.self:'')+'</span></div>'; });
+  }
+  if (dips.length) {
+    html += '<div class="verdict-sub" style="color:var(--amber)">Просідає — на що дивитись</div>';
+    dips.forEach(s => {
+      const egParts = [];
+      if (s.self !== null && s.self - s.mentor >= 1) egParts.push('бачить себе вище за ментора (розрив '+(s.self-s.mentor).toFixed(1)+')');
+      if (s.peer !== null && s.peer <= 2.5) egParts.push('peer теж нижче норми');
+      const eg = egParts.length ? egParts.join('; ') : (CRITERIA_DESC[s.key] || '');
+      html += '<div class="dip-row"><span class="dip-name">'+s.label+'</span><span class="dip-scores">ментор '+s.mentor+(s.self!==null?' · я '+s.self:'')+'</span><span class="dip-eg">'+eg+'</span></div>';
+    });
+  }
+  html += (nextGradeNote ? '<div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border);font-size:13px;color:var(--text);line-height:1.6">'+nextGradeNote+'</div>' : '');
+  html += '</div>';
+
+  // PDP-рекомендації
+  const PDP_HOW = {
+    'ведення_клієнта':'Вийти на автономний ритм з точковим Delivery — синки за розкладом, ревʼю тільки складних артефактів.',
+    'мислення_екшн_планом':'Приходити на синк з гіпотезою наступного кроку; бачити звʼязки між етапами, не окремі кроки.',
+    'управління_очікуваннями':'Жодного зсуву пріоритетів без явної домовленості; клієнт завжди знає що і коли.',
+    'впровадження_змін':'Доводити кожне впровадження до контролю: тест → опір → фідбек.',
+    'дія_в_невизначеності':'Звужувати до конкретного питання з власним варіантом; легалізувати невизначеність перед клієнтом.',
+    'письмова_комунікація':'Впевнена письмова комунікація в нестандартних сценаріях, tone of voice.',
+    'підготовка_дзвінка':'Кожен дзвінок — з адженди й гіпотез; завершувати підсумком домовленостей.',
+    'презентація':'Готувати презентацію під психотип клієнта, продумувати контраргументи заздалегідь.',
+    'робота_з_аудиторією':'Тренувати фасилітацію групи і роботу зі стейкхолдерами, не тільки з фаундером.',
+    'валідація_запиту':'Перед виконанням — «навіщо» і «що зміниться»; альтернатива з аргументацією.',
+    'ризики':'Зчитувати ризики на рівні реакції фаундера і системи бізнесу, не тільки плану.',
+    'стійкість_під_тиском':'Пауза перед відповіддю під тиском; відповідати на запит, не на емоцію.',
+    'людина_людина':'Свідомо будувати контакт, тримаючи межу з панібратством.',
+    'робота_з_фідбеком':'Фідбек не повторюється двічі; самому приходити з рефлексією.',
+    'внесок_opslab':'Принести команді інструмент/шаблон, що реально приживеться.',
+    'робота_з_командою':'Партнерство в команді; за наявності — почати менторити молодшого.',
+    'фінпоказники':'Привʼязати кожного клієнта до 2-3 вимірюваних метрик.',
+    'інструменти':'Будувати системи з нуля впевнено; освоювати новий інструмент за кілька днів.',
+    'автоматизації':'Розрізняти автоматизації в тулзах і Zapier/Make; ТЗ для інтегратора.',
+    'ai':'Ввести AI у щоденну роботу; приносити команді нове.',
+  };
+  const pdpFocus = [];
+  dips.slice(0,3).forEach(s => pdpFocus.push({ area: s.label, why: 'оцінка ментора '+s.mentor+'/4 — нижче впевненого входу', how: PDP_HOW[s.key] || null }));
+  const blindspots = allScores.filter(s => s.self !== null && s.mentor !== null && s.self - s.mentor >= 1.5 && s.mentor > 2.5).sort((a,b)=>(b.self-b.mentor)-(a.self-a.mentor)).slice(0,1);
+  blindspots.forEach(s => pdpFocus.push({ area: s.label + ' (сліпа зона)', why: 'самооцінка '+s.self+' проти '+s.mentor+' у ментора — звірити картину світу', how: 'На 1:1 розібрати ситуації, де сприйняття розійшлося; домовитись про спостережувані ознаки прогресу.' }));
+  if (typeof ipRes !== 'undefined') {
+    ipRes.forEach(r => { if (r.selfB === false && pdpFocus.length < 5) pdpFocus.push({ area: r.label + ' (OpsLab-підхід)', why: 'в ipsative обрано альтернативу, не OpsLab-логіку', how: 'Відпрацювати підхід на реальних кейсах з ментором, поки не стане рефлексом.' }); });
+  }
+  if (pdpFocus.length) {
+    html += '<div class="pdp-box"><div class="pdp-title">На що звернути увагу при формуванні PDP / плану росту</div>';
+    html += '<div class="pdp-lede">Пріоритети від найглибших просідань до сліпих зон самосприйняття. Основа для розмови, не автоматичний вердикт.</div>';
+    pdpFocus.slice(0,5).forEach((f,i) => { html += '<div class="pdp-item"><span class="pdp-num">'+(i+1)+'</span><div><strong>'+f.area+'</strong> — <span class="why">'+f.why+'</span>'+(f.how?'<br>'+f.how:'')+'</div></div>'; });
+    html += '</div>';
+  }
 
   if (ctx) {
     html += '<div class="ctx-card" style="margin-bottom:14px"><div class="ctx-card-title">Контекстні показники</div>';
